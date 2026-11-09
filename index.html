@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script>/* gate-bootstrap: capture an early login submit before the remote gate wires up, so the first click is never lost */
+  (function(){function h(e){var f=e.target;if(f&&f.id==='gate-form'&&!window.MembershipGate){e.preventDefault();e.stopImmediatePropagation();window.__gateEarlySubmit=true;}}window.addEventListener('submit',h,true);window.__gateBootstrapDisarm=function(){window.removeEventListener('submit',h,true);};})();
+  /* returning-member revalidation state (COR-062): hide the login form flash if a session exists */
+  (function(){try{if(localStorage.getItem('maestria_member_session')){document.documentElement.className+=' is-gate-checking';var mo=new MutationObserver(function(){var g=document.getElementById('gate-screen');if(!g||!g.classList.contains('active')){document.documentElement.classList.remove('is-gate-checking');mo.disconnect();}});document.addEventListener('DOMContentLoaded',function(){var t=['gate-screen','key-screen','app-screen'];t.forEach(function(id){var el=document.getElementById(id);if(el)mo.observe(el,{attributes:true,attributeFilter:['class']});});setTimeout(function(){document.documentElement.classList.remove('is-gate-checking');mo.disconnect();},8000);});}}catch(e){}})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veículo IA — Maestros da IA</title>
+  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja em qual dos 5 veículos do Índice do Idiota (Alex Hormozi) ela cai — com carta posicionada, rúbrica pontuada e pivôs para subir na carta.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://gate.maestrosdaia.com">
+  <link rel="preload" href="https://gate.maestrosdaia.com/v1/membership-gate.js" as="script">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4efe2'/%3E%3Crect x='2' y='2' width='28' height='28' fill='none' stroke='%2314284a' stroke-width='2'/%3E%3Cpath d='M16 5l3 11-3 11-3-11z' fill='%2314284a'/%3E%3Cpath d='M5 16l11-3 11 3-11 3z' fill='%23b5246b'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4efe2'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- ============================ MEMBERSHIP GATE ============================ -->
+  <div id="gate-screen" class="screen active">
+    <div class="gate-container">
+      <div class="neat"><div class="neat-inner">
+        <svg class="gate-rose" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="#14284a" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="36" fill="none" stroke="#14284a" stroke-width=".8" stroke-dasharray="2 3"/>
+          <path d="M50 4l7 46-7 46-7-46z" fill="#14284a"/>
+          <path d="M4 50l46-7 46 7-46 7z" fill="#b5246b"/>
+          <path d="M50 50L22 22M50 50l28-28M50 50L22 78M50 50l28 28" stroke="#14284a" stroke-width="1"/>
+          <circle cx="50" cy="50" r="5" fill="#f4efe2" stroke="#14284a" stroke-width="1.5"/>
+          <text x="50" y="2.6" font-size="9" text-anchor="middle" fill="#14284a" font-family="Georgia,serif" font-style="italic" dy="7">N</text>
+        </svg>
+        <div class="gate-header">
+          <p class="kicker">Índice do Idiota · 5 veículos</p>
+          <h1 class="gradient-text">Veículo IA</h1>
+          <p class="subtitle">Descubra em qual "barco" a sua ideia de negócio está — e como subir na carta.</p>
+          <p class="community-badge">Exclusivo para membros da Comunidade Maestros da IA</p>
+        </div>
+
+        <form id="gate-form" class="gate-form">
+          <div class="form-group">
+            <label for="gate-email">Seu e-mail cadastrado</label>
+            <input type="email" id="gate-email" placeholder="seu@email.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="gate-phone">Seu WhatsApp (com DDD)</label>
+            <input type="tel" id="gate-phone" placeholder="11999999999" autocomplete="tel">
+          </div>
+          <button type="submit" id="gate-submit" class="btn-primary">
+            <span class="btn-text">Verificar acesso</span>
+            <span class="btn-loading">Verificando...</span>
+          </button>
+          <p id="gate-error" class="error-message"></p>
+        </form>
+        <p class="gate-checking-note">Conferindo o seu acesso…</p>
+
+        <p class="gate-quote">"O barco em que você entra importa mais do que o quanto você rema."<span>— ideia de Warren Buffett, carta aos acionistas de 1985</span></p>
+        <p class="gate-footer">Ainda não é membro? <a href="https://comunidade.maestrosdaia.com" target="_blank" rel="noopener noreferrer">Conheça a Comunidade Maestros da IA</a></p>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ============================ API KEY SETUP ============================ -->
+  <div id="key-screen" class="screen">
+    <div class="key-container">
+      <div class="neat"><div class="neat-inner">
+        <h2>Conecte sua chave de IA</h2>
+        <p class="subtitle">A ferramenta usa a <strong>sua própria chave</strong> (BYOK). Ela fica salva só no seu navegador — nunca é enviada para nossos servidores.</p>
+
+        <div id="key-inputs" class="key-inputs"></div>
+
+        <div class="key-field">
+          <label for="key-model-select">Modelo de IA</label>
+          <select id="key-model-select"></select>
+          <p class="key-note">Com uma chave da OpenRouter você escolhe entre Claude, GPT, Gemini, DeepSeek e os modelos em alta — tudo com a mesma chave.</p>
+        </div>
+
+        <div class="key-actions">
+          <button id="key-continue" class="btn-primary" disabled>Abrir a carta</button>
+          <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
+        </div>
+
+        <details class="key-info">
+          <summary>Como consigo uma chave da OpenRouter?</summary>
+          <div class="key-info-content">
+            <p>1. Crie uma conta em <code>openrouter.ai</code> e adicione alguns dólares de crédito.</p>
+            <p>2. Gere a chave em <code>openrouter.ai/keys</code> (começa com <code>sk-or-</code>).</p>
+            <p>3. Cole aqui. Cada análise custa centavos de dólar na sua conta.</p>
+          </div>
+        </details>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APPLICATION ============================ -->
+  <div id="app-screen" class="screen">
+    <header class="app-header">
+      <h1 class="app-title">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" fill="#fffdf7" stroke="#14284a" stroke-width="2"/><path d="M16 4l3 12-3 12-3-12z" fill="#14284a"/><path d="M4 16l12-3 12 3-12 3z" fill="#b5246b"/><circle cx="16" cy="16" r="2.2" fill="#f4efe2"/></svg>
+        <span>Veículo IA <small>· Índice do Idiota</small></span>
+      </h1>
+      <div class="header-right">
+        <button id="library-btn" class="btn-icon" title="Minhas ideias salvas" aria-label="Minhas ideias salvas">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </button>
+        <a href="about.html" class="btn-icon" title="Sobre esta ferramenta" aria-label="Sobre esta ferramenta">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </a>
+        <button id="manage-keys-btn" class="btn-icon" title="Gerenciar chaves de API" aria-label="Gerenciar chaves de API">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        </button>
+        <button id="logout-btn" class="btn-icon" title="Sair" aria-label="Sair">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="studio">
+        <!-- BRIEF -->
+        <aside class="panel brief-panel neat"><div class="neat-inner">
+          <p class="panel-kicker">Diário de bordo</p>
+          <h2 class="panel-title">Sua ideia de negócio</h2>
+          <p class="panel-sub">Escreva ou dite. A IA pontua 14 critérios; a régua da ferramenta calcula a posição na carta.</p>
+
+          <div class="field">
+            <label for="in-ideia">O que você quer vender / operar</label>
+            <div class="idea-wrap">
+              <textarea id="in-ideia" maxlength="2500" placeholder="Ex.: Quero abrir uma clínica de estética focada em mulheres acima de 50 anos, com protocolos de rejuvenescimento e plano mensal de manutenção."></textarea>
+              <div class="mic-row">
+                <button type="button" id="mic-btn" class="btn-mic" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>
+                  <span class="mic-label">Ditar</span>
+                </button>
+                <span id="mic-status" class="mic-status" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="counter"><span id="ideia-count">0</span> / 2500</div>
+          </div>
+
+          <div class="field">
+            <label id="goal-label">Qual é o seu objetivo com esse negócio?</label>
+            <div class="chips" id="goal-chips" role="group" aria-labelledby="goal-label">
+              <button type="button" class="chip" data-val="fluxo" aria-pressed="false">Fluxo de caixa<small>começar a gerar dinheiro</small></button>
+              <button type="button" class="chip" data-val="renda" aria-pressed="true">Renda alta<small>ganhar muito por ano</small></button>
+              <button type="button" class="chip" data-val="empresa" aria-pressed="false">Valor de empresa<small>construir algo vendável</small></button>
+              <button type="button" class="chip" data-val="bilhoes" aria-pressed="false">Bilhões<small>mercado enorme + fosso</small></button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="in-contexto">Seu contexto <span class="hint">(opcional — experiência, capital, cidade)</span></label>
+            <input type="text" id="in-contexto" maxlength="400" placeholder="Ex.: sou enfermeira, tenho R$ 80 mil, moro em Campinas">
+          </div>
+
+          <div class="field">
+            <label for="model-select">Modelo de IA</label>
+            <select id="model-select"></select>
+          </div>
+
+          <div class="gen-actions">
+            <button id="generate-btn" class="btn-primary">
+              <span class="gen-text">Posicionar na carta</span>
+              <span class="gen-loading">Navegando…</span>
+            </button>
+            <div class="row-actions">
+              <button id="example-btn" type="button" class="btn-secondary">Usar exemplo</button>
+              <button id="clear-btn" type="button" class="btn-secondary">Limpar</button>
+            </div>
+          </div>
+        </div></aside>
+
+        <!-- STAGE -->
+        <section class="stage" aria-live="polite">
+          <div id="stage-toolbar" class="stage-toolbar" hidden>
+            <h2 class="tb-title" id="tb-title">Sua ideia</h2>
+            <div class="tb-actions">
+              <button id="save-btn" class="btn-secondary" type="button">Salvar no histórico</button>
+              <button id="copy-btn" class="btn-secondary" type="button">Copiar texto</button>
+              <button id="print-btn" class="btn-secondary" type="button">Imprimir / PDF</button>
+              <button id="png-btn" class="btn-primary" type="button">Baixar carta (PNG)</button>
+            </div>
+          </div>
+
+          <div class="chart-card neat"><div class="neat-inner">
+            <div id="chart-host"></div>
+            <div class="chart-legend">
+              <span class="lg"><span class="lg-boat"></span> sua ideia</span>
+              <span class="lg"><span class="lg-pivot"></span> rota de pivô</span>
+              <span class="lg"><span class="lg-buoy"></span> ideias salvas</span>
+              <span class="lg"><span class="lg-sound">· restaurante</span> exemplos do vídeo</span>
+              <label class="switch-line no-print"><input type="checkbox" id="toggle-history" checked> mostrar histórico na carta</label>
+            </div>
+            <dl id="fix-strip" class="fix-strip" hidden>
+              <div><dt>Dificuldade</dt><dd id="fx-x">—</dd></div>
+              <div><dt>Dinheiro</dt><dd id="fx-y">—</dd></div>
+              <div><dt>Veículo</dt><dd class="v" id="fx-v">—</dd></div>
+              <div><dt>Objetivo</dt><dd id="fx-g">—</dd></div>
+            </dl>
+          </div></div>
+
+          <div id="empty-state" class="empty-state neat"><div class="neat-inner">
+            <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="#d6e6ec" stroke="#14284a" stroke-width="2"/><path d="M28 74h64l-9 12H37z" fill="#14284a"/><path d="M60 26v46" stroke="#14284a" stroke-width="3"/><path d="M62 30l24 38H62z" fill="#b5246b"/><path d="M58 36L40 68h18z" fill="#fffdf7" stroke="#14284a" stroke-width="2"/><path d="M14 94c10-6 20 6 30 0s20 6 32 0 20 6 30 0" fill="none" stroke="#14284a" stroke-width="2"/></svg>
+            <h3>Em que barco você está entrando?</h3>
+            <p>Descreva a ideia (ou toque em <strong>Ditar</strong> e fale), escolha seu objetivo e clique em <strong>Posicionar na carta</strong>. Você recebe a posição no Índice do Idiota, a nota de cada critério, o que fazer agora e rotas de pivô para subir na carta.</p>
+          </div></div>
+
+          <div id="loading-state" class="loading-state neat" hidden><div class="neat-inner">
+            <svg class="helm" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="18" fill="none" stroke="#14284a" stroke-width="4"/><circle cx="32" cy="32" r="6" fill="#b5246b"/><g stroke="#14284a" stroke-width="4" stroke-linecap="round"><path d="M32 4v14M32 46v14M4 32h14M46 32h14M12 12l10 10M42 42l10 10M12 52l10-10M42 22l10-10"/></g></svg>
+            <h3 id="loading-title">Tirando as sondagens…</h3>
+            <p id="loading-sub">A IA está pontuando os 14 critérios da rúbrica.</p>
+          </div></div>
+
+          <div id="error-state" class="error-state neat" hidden><div class="neat-inner">
+            <p id="error-text"></p>
+            <button id="retry-btn" type="button" class="btn-secondary">Tentar de novo</button>
+          </div></div>
+
+          <article id="report" class="report neat" hidden><div class="neat-inner" id="report-body"></div></article>
+
+          <section id="origens" class="report neat"><div class="neat-inner">
+            <p class="panel-kicker">Origens</p>
+            <h3>De onde vem este framework</h3>
+            <p>O "Índice do Idiota" é o nome que Alex Hormozi dá ao gráfico do vídeo <a href="https://youtu.be/pwZJcLZc3_Y" target="_blank" rel="noopener noreferrer">"How To Make More Money Than You Deserve (My 2027 Framework)"</a>. As ideias por trás dele são mais antigas. Abaixo, cada fonte e o que ela sustenta — com honestidade sobre o que é de quem.</p>
+            <ul class="origins" id="origins-list"></ul>
+            <p class="disclaimer">Ferramenta educacional da Comunidade Maestros da IA. Não é afiliada nem endossada por Alex Hormozi, Warren Buffett ou pelos demais autores citados. A posição na carta é uma estimativa a partir das notas da rúbrica — não é garantia de resultado nem recomendação de investimento.</p>
+          </div></section>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <p>Feito para a comunidade <strong>Maestros da IA</strong> · <a href="about.html">Sobre o Veículo IA</a></p>
+      <p class="footer-links">
+        <a href="privacy-policy.html" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+        <span class="footer-sep">·</span>
+        <a href="data-deletion.html" target="_blank" rel="noopener noreferrer">Solicitar Exclusão de Dados</a>
+      </p>
+    </footer>
+  </div>
+
+  <!-- ============================ API Key Manager Modal ============================ -->
+  <div id="key-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Gerenciar chaves de API</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Fechar">&times;</button>
+      </div>
+      <div id="modal-key-inputs" class="key-inputs"></div>
+      <div class="key-field">
+        <label for="model-select-modal">Modelo de IA</label>
+        <select id="model-select-modal"></select>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-save" class="btn-primary">Salvar</button>
+        <button id="modal-clear" class="btn-danger">Limpar todas as chaves</button>
+      </div>
+      <p class="modal-note">As chaves ficam só no seu navegador (localStorage). Nunca tocam nossos servidores.</p>
+    </div>
+  </div>
+
+  <!-- ============================ Library Modal ============================ -->
+  <div id="lib-modal" class="modal" style="display:none;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Minhas ideias salvas</h3>
+        <button id="lib-close" class="btn-icon" aria-label="Fechar">&times;</button>
+      </div>
+      <div id="lib-list" class="lib-list"></div>
+      <p class="modal-note">O histórico fica só neste navegador. Todas as ideias salvas aparecem como boias numeradas na mesma carta, para você comparar.</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="kill-switch.js"></script>
+  <script src="rate-limiter.js"></script>
+  <script src="https://gate.maestrosdaia.com/v1/membership-gate.js"></script>
+  <script src="api-key-manager.js"></script>
+  <script src="feedback-widget.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
