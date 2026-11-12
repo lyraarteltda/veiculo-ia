@@ -1078,6 +1078,22 @@ const App = (function () {
     return [{ role: 'system', content: sys }, { role: 'user', content: user }];
   }
 
+  // What KIND of business lives at the destination, in words, plus the video's example businesses
+  // nearest to that point. Deliberately no formula and no target averages: with numbers the model
+  // back-solves the scores to land on the point, and "chega perto" stops meaning anything (COR-071).
+  function targetProfile(t) {
+    var dx = t.x <= 35 ? 'fáceis de operar (pouca mão de obra, habilidade comum, pouco capital, pouca regulação, operação simples, resultado rápido)'
+      : t.x >= 65 ? 'difíceis de operar (habilidade rara, capital, licenças, operação pesada ou anos para maturar, que afastam os concorrentes)'
+      : 'de dificuldade média (alguma habilidade, capital ou operação, mas nada que leve anos)';
+    var dy = t.y >= 65 ? 'que dão muito dinheiro (mercado grande, margem alta, crescem sem crescer a equipe na mesma proporção, com fosso ou vento a favor, cliente recorrente, funcionam sem o dono)'
+      : t.y <= 35 ? 'que dão pouco dinheiro (teto baixo, margem apertada ou muita concorrência)'
+      : 'que dão dinheiro médio (boa margem ou bom mercado, mas não os dois com folga)';
+    var near = EXAMPLES.map(function (e) { return { e: e, d: Math.hypot(e.x - t.x, e.y - t.y) }; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 3).map(function (o) { return o.e.t; });
+    return [
+      'O QUE EXISTE NESSE DESTINO: negócios ' + dx + ' e ' + dy + '. Só como referência do perfil, não para copiar: ' + near.join(', ') + ' ficam perto desse ponto no vídeo. Procure negócios com esse perfil que reaproveitem as competências e o histórico da pessoa.',
+      'Pontue cada sugestão com honestidade, como se fosse avaliá-la do zero, sem mirar números: a posição sai da conta da ferramenta, e uma nota inflada para "chegar" engana a pessoa.'
+    ].join('\n');
+  }
   function sugMessages(cur, t, comp, hist, obj) {
     var rubNotes = RKEYS.map(function (k) { return k + '=' + cur.rubric[k].nota; }).join(', ');
     var tq = quad(t.x, t.y);
@@ -1099,6 +1115,7 @@ const App = (function () {
       'POSIÇÃO ATUAL (calculada): ' + posText(cur) + '.',
       'NOTAS ATUAIS: ' + rubNotes + '; parece_legal=' + cur.legal.nota,
       'DESTINO escolhido na carta: dificuldade ' + t.x + '/100, dinheiro ' + t.y + '/100 → ' + QUADS[tq].nome + ' (' + QUADS[tq].eixo + '). Mudança desejada: ' + signed(t.y - cur.y) + ' dinheiro, ' + signed(t.x - cur.x) + ' dificuldade.',
+      targetProfile(t),
       'COMPETÊNCIAS: ' + (comp || 'não informado'),
       'HISTÓRICO: ' + (hist || 'não informado'),
       'OBJETIVOS: ' + (obj || GOALS[cur.goal].obj)
