@@ -268,12 +268,7 @@ const App = (function () {
   }
   var QFILL = { arb: '#dcefeb', fos: '#cfe2ea', cai: '#e8f0f3', com: '#f4ecd6' };
 
-  function markersFor(cur, mode) {
-    if (!cur) return [];
-    if (mode === 'rumo' && cur.sugs && cur.sugs.length) return cur.sugs.map(function (s, i) { return { kind: 'sug', n: i + 1, x: s.x, y: s.y, ok: s.perto, anchor: s.anchor }; });
-    if (mode !== 'rumo' && cur.pivots && cur.pivots.length) return cur.pivots.map(function (p, i) { return { kind: 'pivot', n: i + 1, x: p.x, y: p.y, ok: true, anchor: p.anchor }; });
-    return [];
-  }
+  function markersFor() { return []; }   // v4.3: pivots and suggestions stay in the tabs, not on the chart
   // Nudge dots that would sit on the boat or on each other — smallest displacement only
   function spreadDots(g, cur, list) {
     var px = pxf(g), py = pyf(g), bx = px(cur.x), by = py(cur.y);
@@ -609,8 +604,6 @@ const App = (function () {
     drag.x = clamp(x, 2, 98); drag.y = clamp(y, 2, 98);
     drawDest(svg, g, drag.x, drag.y, true);
     setQHL(svg, quad(drag.x, drag.y));
-    var list = nearestExamples(drag.x, drag.y).slice(0, 3), key = list.map(function (e) { return e.t; }).join('|');
-    if (key !== drag.exKey) { drag.exKey = key; drawExDots(list); }
   }
   function endDrag(commit) {
     var svg = $('chart-host').querySelector('svg');
@@ -1032,8 +1025,8 @@ const App = (function () {
   function updateHint() {
     var h = $('chart-hint'); if (!h) return;
     var hover = false; try { hover = window.matchMedia('(hover: hover)').matches; } catch (e) {}
-    if (!state.cur || $('result').hidden) h.textContent = hover ? 'Passe o mouse no gráfico para ver exemplos. O "i" de cada canto explica o quadrante.' : 'Toque no gráfico para ver exemplos. O "i" de cada canto explica o quadrante.';
-    else h.textContent = hover ? 'Arraste no gráfico (ou o barco) até onde você quer chegar. Pelo teclado: setas e Enter.' : 'Arraste o barco até onde você quer chegar. Toque no gráfico para ver exemplos.';
+    if (!state.cur || $('result').hidden) h.textContent = 'O "i" de cada canto explica o quadrante.';
+    else h.textContent = hover ? 'Arraste no gráfico (ou o barco) até onde você quer chegar. Pelo teclado: setas e Enter.' : 'Arraste o barco até onde você quer chegar.';
   }
 
   // ── Pointer → data coordinates ────────────────────────────────────────────
@@ -1136,32 +1129,10 @@ const App = (function () {
     };
     if (now) go(); else state.lens.hideT = setTimeout(go, 280);
   }
-  function onChartMove(evt) {
-    if (onDragMove(evt)) return;
-    if (evt.pointerType && evt.pointerType !== 'mouse') return;
-    if (state.lens.pinned || drag.kbd) return;
-    var ev = { clientX: evt.clientX, clientY: evt.clientY };
-    if (state.raf) return;
-    state.raf = requestAnimationFrame(function () {
-      state.raf = 0;
-      if (drag.active || state.lens.pinned) return;
-      var d = toData(ev); if (!d) return;
-      if (!d.inside) { hideLens(false); return; }
-      if (nearGrab(ev.clientX, ev.clientY)) { hideLens(true); return; }   // reaching for the boat or the buoy: no lens in the way
-      var wr = $('chart-wrap').getBoundingClientRect();
-      showLens(nearestExamples(d.x, d.y), false, { x: ev.clientX - wr.left, y: ev.clientY - wr.top });
-    });
-  }
+  // v4.3: the chart shows only the member's idea — no example lens on hover or tap; it only drags
+  function onChartMove(evt) { onDragMove(evt); }
   function onChartLeave() { if (!state.lens.pinned && !drag.active) hideLens(false); }
-  function onChartClick(evt) {
-    if (state.justDragged) return;
-    if (evt.target && evt.target.closest && evt.target.closest('.zinfo,.dest-go,#chart-pop,#zone-card')) return;
-    var d = toData(evt); if (!d || !d.inside) return;
-    state.lens.key = '';
-    var wr = $('chart-wrap').getBoundingClientRect();
-    showLens(nearestExamples(d.x, d.y), true, { x: evt.clientX - wr.left, y: evt.clientY - wr.top });
-    state.lens.clickPinned = true;
-  }
+  function onChartClick() { /* v4.3: a tap or click on the chart opens nothing */ }
   function onPopClick(evt) {
     var btn = evt.target.closest('.pop-item');
     if (!btn) return;
@@ -1547,7 +1518,7 @@ const App = (function () {
             '<p class="pmove">' + deltaText(cur, p) + ' · ' + esc(QUADS[cur.q].nome) + ' → <b>' + esc(QUADS[p.q].nome) + '</b>' + (p.anchor ? ' ⚓' : '') + ' ' + srcChip(p.fonte) + '</p></div>');
         });
         pv.push('</div>');
-        h.push(section('Pivôs (os números no gráfico)', pv.join(''), true));
+        h.push(section('Pivôs', pv.join(''), true));
       }
       h.push(section('Por que este quadrante', listHTML(rep.por_que), false));
       h.push(section('Riscos do negócio', listHTML(rep.riscos, 'risk'), false));
@@ -1842,8 +1813,8 @@ const App = (function () {
     var off = document.createElement('div');
     off.style.cssText = 'position:fixed;left:-12000px;top:0;width:1000px;visibility:hidden;';
     document.body.appendChild(off);
-    var g = geom('export'), useSugs = state.chartMode === 'rumo' && cur.sugs && cur.sugs.length;
-    var o = { idp: 'e', cur: cur, mode: useSugs ? 'rumo' : 'diag', iw: 0, target: useSugs ? (cur.sugTarget || cur.target) : null, showHist: false };
+    var g = geom('export'), dest = cur.target || null;
+    var o = { idp: 'e', cur: cur, mode: 'diag', iw: 0, target: dest, showHist: false };
     off.innerHTML = buildSVG(g, o);
     var svgEl = off.querySelector('svg');
     try { layout(svgEl, g, o); } catch (e) {}
@@ -1861,13 +1832,7 @@ const App = (function () {
     var lines = [];
     if (cur.anchor) lines.push({ t: '⚓ ' + ANCHOR.nome + ' — ' + ANCHOR.linha, c: '#14284a' });
     if (bnd) lines.push({ t: 'Fica ' + bnd, c: '#4a5a74' });
-    if (useSugs) {
-      var t = o.target;
-      lines.push({ t: 'Destino: ' + absText(t) + ' (' + deltaText(cur, t) + ')', c: '#8e1752' });
-      cur.sugs.forEach(function (s, i) { lines.push({ t: (i + 1) + ' · ' + cut(s.nome, 46) + ' — ' + (s.perto ? 'chega perto' : 'fica longe') + ' (a ' + s.dist + ' pts)' + (s.anchor ? ' ⚓' : ''), c: s.perto ? '#0f6b6b' : '#4a5a74' }); });
-    } else {
-      (cur.pivots || []).forEach(function (p, i) { lines.push({ t: (i + 1) + ' · ' + cut(p.nome, 56) + ' → ' + QUADS[p.q].nome + (p.anchor ? ' ⚓' : '') + ' · ' + deltaText(cur, p), c: '#0f6b6b' }); });
-    }
+    if (dest) lines.push({ t: 'Destino: ' + absText(dest) + ' (' + deltaText(cur, dest) + ')', c: '#8e1752' });
     var H = y0 + 52 + lines.length * 34 + 60, W = 1600;
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
       '<rect width="' + W + '" height="' + H + '" fill="#f4efe2"/>' +
