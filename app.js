@@ -392,6 +392,7 @@ const App = (function () {
   function setLines(el, lines, x, yTop, fz) {
     while (el.firstChild) el.removeChild(el.firstChild);
     el.setAttribute('font-size', fz);
+    el.setAttribute('aria-label', lines.join(' ')); // wrapped lines read as one phrase
     lines.forEach(function (ln, i) {
       var ts = document.createElementNS(SVGNS, 'tspan');
       ts.setAttribute('x', x);
