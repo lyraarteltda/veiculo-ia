@@ -841,7 +841,7 @@ const App = (function () {
     h.push('</ul><p class="pop-foot">Exemplos citados no vídeo, em posição ilustrativa. ' + (pinned ? 'Esc ou clique fora fecha.' : 'Clique para fixar.') + '</p>');
     return h.join('');
   }
-  function showLens(list, pinned) {
+  function showLens(list, pinned, at) {
     var pop = $('chart-pop'), key = list.map(function (e) { return e.t; }).join('|') + (pinned ? '#p' : '');
     clearTimeout(state.lens.hideT);
     if (state.lens.open && state.lens.key === key) return;            // same set: don't move, don't flicker
@@ -855,21 +855,46 @@ const App = (function () {
       var svg = $('chart-host').querySelector('svg'), g = state.g, wr = $('chart-wrap').getBoundingClientRect();
       var pts = list.map(function (e) { return wrapPoint(svg, pxf(g)(e.x), pyf(g)(e.y)); });
       var maxX = Math.max.apply(null, pts.map(function (p) { return p.x; })), minX = Math.min.apply(null, pts.map(function (p) { return p.x; }));
-      var cy = pts.reduce(function (a, p) { return a + p.y; }, 0) / pts.length;
-      var pw = pop.offsetWidth || 340, ph = pop.offsetHeight || 240;
-      var x = maxX + 18; if (x + pw > wr.width - 4) x = minX - 18 - pw; if (x < 4) x = clamp(maxX - pw / 2, 4, wr.width - pw - 4);
-      var y = clamp(cy - ph / 2, 4, Math.max(4, wr.height - ph - 4));
+      var maxY = Math.max.apply(null, pts.map(function (p) { return p.y; })), minY = Math.min.apply(null, pts.map(function (p) { return p.y; }));
+      var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+      var pw = pop.offsetWidth || 340, ph = pop.offsetHeight || 240, W = wr.width, H = wr.height;
+      // Scored placement (COR-071): never under the pointer (it would catch the hover and stick),
+      // never over the boat or the buoy (they must stay grabbable), and as little as possible over the examples.
+      var keep = grabSpots().map(function (k) { return { x: k.x, y: k.y, r: k.r, w: 6 }; });
+      if (at) keep.push({ x: at.x, y: at.y, r: 26, w: 8 });
+      pts.forEach(function (p) { keep.push({ x: p.x, y: p.y, r: 10, w: 1 }); });
+      var cands = [[maxX + 18, cy - ph / 2], [minX - 18 - pw, cy - ph / 2], [cx - pw / 2, minY - 18 - ph], [cx - pw / 2, maxY + 18],
+        [4, 4], [W - pw - 4, 4], [4, H - ph - 4], [W - pw - 4, H - ph - 4]];
+      var best = null;
+      cands.forEach(function (c, n) {
+        var l = clamp(c[0], 4, Math.max(4, W - pw - 4)), t = clamp(c[1], 4, Math.max(4, H - ph - 4)), cost = n * 2;
+        keep.forEach(function (k) { var ox = Math.min(l + pw, k.x + k.r) - Math.max(l, k.x - k.r), oy = Math.min(t + ph, k.y + k.r) - Math.max(t, k.y - k.r); if (ox > 0 && oy > 0) cost += ox * oy * k.w; });
+        if (!best || cost < best.cost) best = { l: l, t: t, cost: cost };
+      });
+      var x = best.l, y = best.t;
       pop.style.left = Math.round(x) + 'px'; pop.style.top = Math.round(y) + 'px';
     }
     pop.classList.add('on');
     drawExDots(list);
+  }
+  // Screen spots that must stay free for grabbing: the boat and the destination buoy (wrap coordinates).
+  function grabSpots() {
+    var svg = $('chart-host').querySelector('svg'), g = state.g, cur = state.cur, out = [];
+    if (!svg || !g || !cur || $('result').hidden) return out;
+    var b = wrapPoint(svg, pxf(g)(cur.x), pyf(g)(cur.y)); out.push({ x: b.x, y: b.y, r: 44 });
+    if (cur.target) { var t = wrapPoint(svg, pxf(g)(cur.target.x), pyf(g)(cur.target.y)); out.push({ x: t.x, y: t.y, r: 34 }); }
+    return out;
+  }
+  function nearGrab(cx, cy) {
+    var wr = $('chart-wrap').getBoundingClientRect(), x = cx - wr.left, y = cy - wr.top;
+    return grabSpots().some(function (k) { return Math.hypot(x - k.x, y - k.y) < k.r; });
   }
   function hideLens(now) {
     var pop = $('chart-pop'); if (!pop) return;
     clearTimeout(state.lens.hideT);
     var go = function () {
       pop.classList.remove('on'); pop.setAttribute('aria-hidden', 'true');
-      state.lens.open = false; state.lens.pinned = false; state.lens.key = '';
+      state.lens.open = false; state.lens.pinned = false; state.lens.clickPinned = false; state.lens.key = '';
       if (!drag.active && !drag.kbd) drawExDots([]);
     };
     if (now) go(); else state.lens.hideT = setTimeout(go, 280);
@@ -885,7 +910,9 @@ const App = (function () {
       if (drag.active || state.lens.pinned) return;
       var d = toData(ev); if (!d) return;
       if (!d.inside) { hideLens(false); return; }
-      showLens(nearestExamples(d.x, d.y), false);
+      if (nearGrab(ev.clientX, ev.clientY)) { hideLens(true); return; }   // reaching for the boat or the buoy: no lens in the way
+      var wr = $('chart-wrap').getBoundingClientRect();
+      showLens(nearestExamples(d.x, d.y), false, { x: ev.clientX - wr.left, y: ev.clientY - wr.top });
     });
   }
   function onChartLeave() { if (!state.lens.pinned && !drag.active) hideLens(false); }
@@ -894,7 +921,9 @@ const App = (function () {
     if (evt.target && evt.target.closest && evt.target.closest('.zinfo,.dest-go,#chart-pop,#zone-card')) return;
     var d = toData(evt); if (!d || !d.inside) return;
     state.lens.key = '';
-    showLens(nearestExamples(d.x, d.y), true);
+    var wr = $('chart-wrap').getBoundingClientRect();
+    showLens(nearestExamples(d.x, d.y), true, { x: evt.clientX - wr.left, y: evt.clientY - wr.top });
+    state.lens.clickPinned = true;
   }
   function onPopClick(evt) {
     var btn = evt.target.closest('.pop-item');
@@ -1722,6 +1751,7 @@ const App = (function () {
     var hd = $('boat-handle');
     hd.addEventListener('pointerdown', onHandleDown);
     hd.addEventListener('pointermove', onDragMove);
+    hd.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse' && !drag.active && !state.lens.clickPinned) hideLens(true); });   // reaching for the boat: no lens
     hd.addEventListener('pointerup', onDragUp);
     hd.addEventListener('pointercancel', onDragCancel);
     $('chart-wrap').addEventListener('keydown', onBoardKey);
