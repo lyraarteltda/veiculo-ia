@@ -157,7 +157,7 @@ const App = (function () {
   };
 
   var state = { cur: null, wired: false, busy: false, sugBusy: false, rec: null, recBtn: null, goal: 'renda', tab: 'diag', chartMode: 'diag', g: null,
-    lens: { open: false, pinned: false, key: '', hideT: 0 }, card: { open: false, key: '', btn: null }, objAuto: true, raf: 0, lastHostW: 0, justDragged: false };
+    lens: { open: false, pinned: false, key: '', hideT: 0 }, card: { open: false, key: '', btn: null }, objAuto: true, raf: 0, lastHostW: 0, justDragged: false, seenKey: '' };
   var drag = { pending: false, active: false, id: null, sx: 0, sy: 0, cx: 0, cy: 0, x: 0, y: 0, raf: 0, kbd: false, exKey: '' };
 
   // ── helpers ──
@@ -733,27 +733,64 @@ const App = (function () {
     h.style.left = Math.round(p.x - 28) + 'px'; h.style.top = Math.round(p.y - 28) + 'px';
     h.hidden = false;
   }
+  // The floating action next to the buoy has three states: "Sugerir…" (new destination),
+  // "Procurando…" (model working) and "Ver as sugestões ↓" (answer is in; scrolls to the list).
   function placeDestGo() {
     var b = $('dest-go'), svg = $('chart-host').querySelector('svg'), g = state.g, cur = state.cur;
     if (!b) return;
     var done = cur && cur.target && cur.sugTarget && cur.sugTarget.x === cur.target.x && cur.sugTarget.y === cur.target.y && cur.sugs && cur.sugs.length;
-    if (!cur || !cur.target || !svg || $('result').hidden || done || state.sugBusy) { b.hidden = true; return; }
+    if (!cur || !cur.target || !svg || $('result').hidden) { b.hidden = true; return; }
+    var mode = state.sugBusy ? 'busy' : (done ? 'ver' : 'go');
+    if (mode === 'ver' && state.seenKey === sugKey(cur)) { b.hidden = true; return; }   // list already seen: keep the board clean
+    if (b.getAttribute('data-mode') !== mode) {
+      b.setAttribute('data-mode', mode);
+      if (mode === 'busy') b.textContent = 'Procurando negócios…';
+      else if (mode === 'ver') { var perto = cur.sugs.filter(function (s) { return s.perto; }).length; b.textContent = narrow() ? 'Ver as ' + cur.sugs.length + ' sugestões ↓' : 'Ver as sugestões ↓ · ' + perto + ' de ' + cur.sugs.length + ' perto'; }
+      else b.textContent = 'Sugerir negócios para chegar aqui';
+    }
+    b.disabled = mode === 'busy';
+    b.setAttribute('aria-busy', mode === 'busy' ? 'true' : 'false');
     b.hidden = false;
     var p = wrapPoint(svg, pxf(g)(cur.target.x), pyf(g)(cur.target.y));
     var wr = $('chart-wrap').getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
-    // Next to the buoy, on the first side that covers no corner "i", the boat or the buoy itself.
-    var avoid = [].slice.call(document.querySelectorAll('#info-btns .zinfo, #boat-handle')).filter(function (el) { return !el.hidden; }).map(function (el) {
+    // Next to the buoy, on the first side that covers no corner "i", the boat, the buoy or a numbered dot.
+    var avoid = [].slice.call(document.querySelectorAll('#info-btns .zinfo, #boat-handle, #chart-host .dots > circle, #chart-host .zl, #chart-host .idea-tag')).filter(function (el) { return !el.hidden; }).map(function (el) {
       var r = el.getBoundingClientRect(); return { l: r.left - wr.left - 4, t: r.top - wr.top - 4, r: r.right - wr.left + 4, b: r.bottom - wr.top + 4 };
     });
     avoid.push({ l: p.x - 16, t: p.y - 16, r: p.x + 16, b: p.y + 16 });
     var cands = [[p.x - bw / 2, p.y + 22], [p.x - bw / 2, p.y - 22 - bh], [p.x + 24, p.y - bh / 2], [p.x - 24 - bw, p.y - bh / 2]];
+    if (mode === 'ver') {   // a navigation button may leave the buoy's side: try the board's bottom and top edges too
+      var qs = [].slice.call(svg.querySelectorAll('.qhl-r')).map(function (r) { return r.getBoundingClientRect(); });
+      if (qs.length) {
+        var pt = Math.min.apply(null, qs.map(function (r) { return r.top; })) - wr.top, pb = Math.max.apply(null, qs.map(function (r) { return r.bottom; })) - wr.top;
+        cands.push([wr.width / 2 - bw / 2, pb - bh - 52], [wr.width / 2 - bw / 2, pt + 48]);
+      }
+    }
     var best = null;
     cands.forEach(function (c, i) {
-      var l = clamp(c[0], 4, wr.width - bw - 4), t = clamp(c[1], 4, wr.height - bh - 4), cost = i * 0.5;
+      var l = clamp(c[0], 4, wr.width - bw - 4), t = clamp(c[1], 4, wr.height - bh - 4), cost = i < 4 ? i * 0.5 : 40 + i;
       avoid.forEach(function (a) { var ox = Math.min(l + bw, a.r) - Math.max(l, a.l), oy = Math.min(t + bh, a.b) - Math.max(t, a.t); if (ox > 0 && oy > 0) cost += ox * oy; });
       if (!best || cost < best.cost) best = { l: l, t: t, cost: cost };
     });
     b.style.left = Math.round(best.l) + 'px'; b.style.top = Math.round(best.t) + 'px';
+  }
+  function sugKey(cur) { return cur && cur.sugTarget && cur.sugs && cur.sugs.length ? cur.sugTarget.x + ',' + cur.sugTarget.y + ',' + cur.sugs.map(function (x) { return x.nome; }).join('|') : ''; }
+  function markSugsSeen() { var k = sugKey(state.cur); if (k && state.seenKey !== k) { state.seenKey = k; placeDestGo(); } }
+  function sugsInView() { var c = document.querySelector('#sug-list .sug-card'); if (!c || $('panel-rumo').hidden) return false; var r = c.getBoundingClientRect(); return r.top < window.innerHeight - 40 && r.bottom > headerBottom() + 40; }
+  function onDestGo() {
+    var b = $('dest-go');
+    if (b.getAttribute('data-mode') === 'ver') {
+      markSugsSeen();
+      if (state.tab !== 'rumo') setTab('rumo');
+      var st = $('sug-status'), hb = headerBottom();
+      if (st) {
+        window.scrollBy({ top: st.getBoundingClientRect().top - hb - 16, behavior: reducedMotion() ? 'auto' : 'smooth' });
+        var first = document.querySelector('#sug-list .sug-card h5');
+        if (first) { first.setAttribute('tabindex', '-1'); try { first.focus({ preventScroll: true }); } catch (e) {} }
+      }
+      return;
+    }
+    suggest();
   }
   function updateHint() {
     var h = $('chart-hint'); if (!h) return;
@@ -1396,7 +1433,7 @@ const App = (function () {
     var comp = ($('in-comp').value || '').trim(), hist = ($('in-hist').value || '').trim(), obj = ($('in-obj').value || '').trim();
     state.sugBusy = true;
     var btn = $('sug-btn'); btn.disabled = true; btn.classList.add('is-busy');
-    $('dest-go').hidden = true;
+    placeDestGo();
     $('sug-status').textContent = 'Procurando negócios parecidos que cheguem perto de ' + QUADS[quad(t.x, t.y)].nome + '…';
     callJSON(sugMessages(cur, t, comp, hist, obj), 7000).then(function (j) {
       var list = normSugs(j, cur, t);
@@ -1404,6 +1441,7 @@ const App = (function () {
       cur.sugs = list; cur.sugTarget = t;
       lsSet(CURRENT_SLOT, cur);
       renderChart(); renderRumo();
+      if (sugsInView()) markSugsSeen();
       var perto = list.filter(function (s) { return s.perto; }).length;
       $('sug-status').textContent = perto + ' de ' + list.length + ' chegam perto do destino (até ' + NEAR + ' pontos), pela régua da ferramenta. Arraste o destino e peça de novo quando quiser.';
     }).catch(function (e) {
@@ -1658,7 +1696,9 @@ const App = (function () {
     $('print-btn').addEventListener('click', printReport);
     $('png-btn').addEventListener('click', exportPNG);
     $('sug-btn').addEventListener('click', suggest);
-    $('dest-go').addEventListener('click', suggest);
+    $('dest-go').addEventListener('click', onDestGo);
+    var sugScrollT = null;   // seeing the list by scrolling also retires the "Ver as sugestões" pill
+    window.addEventListener('scroll', function () { if (sugScrollT) return; sugScrollT = setTimeout(function () { sugScrollT = null; if (state.cur && state.cur.sugs && state.cur.sugs.length && sugsInView()) markSugsSeen(); }, 150); }, { passive: true });
     $('sug-list').addEventListener('click', onSugClick);
     $('dir-buttons').addEventListener('click', function (e) { var b = e.target.closest('.dir-btn'); if (b) setTargetFromChip(b.getAttribute('data-dir')); });
     document.querySelectorAll('#result-tabs [role="tab"]').forEach(function (b) {
