@@ -635,3 +635,74 @@ details.more[open] > summary { margin-bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .calc-anchor { animation: none !important; } }
 @media print { .rep-tools, .calc-btn, .sim-panel { display: none !important; } }
+
+/* ───────────────── v5: the search thinks its way to the destination ───────────────── */
+.gen-hint { margin: 0; font-size: 16px; line-height: 1.4; color: var(--magenta-dark); text-align: center; }
+.gen-actions .btn-secondary { width: 100%; }
+/* one line right under the chart: what the search is doing, with "Parar" always at hand */
+.search-line { flex: 1 1 100%; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: 0; padding: 6px 10px; border: 2px solid var(--teal); background: #e9f3f1; font-size: 18px; line-height: 1.35; color: var(--ink); }
+.search-line .sl-text { flex: 1 1 200px; min-width: 0; }
+.search-line .sl-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--teal); }
+.search-line.running .sl-dot { background: var(--magenta); animation: slPulse 1.1s ease-in-out infinite; }
+.search-line.running { border-color: var(--magenta); background: #fbeef4; }
+.sl-stop { flex: none; min-height: 40px; padding: 4px 16px; border-radius: 999px; border: 2px solid var(--magenta); background: #fffdf7; color: var(--magenta-dark); font: inherit; font-weight: 700; cursor: pointer; }
+.sl-stop:hover { background: var(--magenta); color: #fff; }
+@keyframes slPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+/* the "Pensando…" panel in "Para onde ir?" */
+.search-panel { border: 2px solid var(--ink); background: #fffdf7; padding: 14px 14px 10px; margin: 12px 0 4px; }
+.search-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.search-head h4 { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 21px; }
+.search-stop { min-height: 44px; }
+.search-steps { list-style: none; margin: 10px 0 4px; padding: 0; }
+.search-steps li { position: relative; padding: 4px 0 4px 30px; font-size: 17px; line-height: 1.4; color: var(--ink); }
+.search-steps li::before { content: ""; position: absolute; left: 4px; top: 9px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #9aa3b1; background: #fffdf7; }
+.search-steps li.st-done::before { content: "✓"; border-color: var(--teal); background: var(--teal); color: #fff; font-size: 11px; font-weight: 700; line-height: 14px; text-align: center; }
+.search-steps li.st-run { font-weight: 700; }
+.search-steps li.st-run::before { border-color: var(--magenta); background: var(--magenta); animation: slPulse 1.1s ease-in-out infinite; }
+.search-steps li.st-wait { color: var(--ink-soft); }
+.search-profile { margin: 8px 0 2px; padding: 10px 12px; background: #eef4f6; border-left: 4px solid var(--teal); }
+.search-profile p { margin: 0 0 2px; font-size: 16px; line-height: 1.5; }
+.search-profile .btn-link, .search-clear { font-size: 16px; color: var(--magenta-dark); padding-left: 0; }
+.refine-title { margin: 22px 0 2px; font-family: var(--font-display); font-style: italic; font-size: 20px; }
+.refine-lead { margin: 0 0 8px; font-size: 15px; }
+/* cards */
+.sug-card { transition: box-shadow .15s ease, outline-color .15s ease; outline: 3px solid transparent; outline-offset: 2px; }
+.sug-card.hl { outline-color: var(--magenta); box-shadow: 0 8px 22px -12px rgba(181,36,107,.6); }
+.sug-desc { font-weight: 600; }
+.sug-change p { margin: 6px 0 2px; }
+.sug-crit { margin: 2px 0 6px; padding-left: 20px; }
+.sug-crit li { font-size: 15px; line-height: 1.45; margin: 2px 0; }
+.sc-eff { font-family: var(--font-mono); font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+.sug-meta { font-size: 14px; color: var(--ink-soft); font-style: italic; }
+.sug-none { margin: 10px 0 2px; padding: 10px 12px; border: 2px dashed var(--warn); background: #fbf3e2; font-size: 16px; line-height: 1.45; }
+.sug-actions .btn-link { flex: 0 1 auto; }
+/* chart: radius-15 ring around the destination, measured candidates as dots, the 5 chosen as markers */
+.chart-svg .search .s-ring, .chart-svg .search .s-link { pointer-events: none; }
+.chart-svg .search.running .s-ring { animation: ringPulse 1.6s ease-in-out infinite; }
+@keyframes ringPulse { 0%, 100% { stroke-opacity: 1; fill-opacity: .07; } 50% { stroke-opacity: .45; fill-opacity: .14; } }
+.chart-svg .s-dot { transform-box: fill-box; transform-origin: center; }
+.chart-svg .s-dot.new { animation: dotIn .45s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes dotIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.chart-svg .s-dot.fade { animation: dotOut .9s ease forwards; }
+.chart-svg .s-link { transition: opacity .3s ease; }
+@keyframes dotOut { from { opacity: 1; } to { opacity: 0; } }
+.chart-svg .mk-sug { cursor: pointer; }
+.chart-svg .mk-sug .mk-c { transition: stroke-width .15s ease; }
+.chart-svg .mk-sug.hl .mk-c { stroke: #b5246b; stroke-width: 4.5; }
+.chart-svg .mk-sug.going .mk-c { animation: ringPulse 1.2s ease-in-out infinite; }
+.chart-svg.calc-on .search { visibility: hidden !important; }
+.calc-wake { stroke: #b5246b; stroke-width: 2.2; stroke-dasharray: 7 6; opacity: .7; fill: none; }
+.print-only { display: none; }
+@media print {
+  .print-only { display: block !important; }
+  .search-print { break-before: page; }
+  .search-print .sug-card { break-inside: avoid; margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-line .sl-dot, .search-steps li::before, .chart-svg .search .s-ring, .chart-svg .s-dot, .chart-svg .mk-sug .mk-c { animation: none !important; transition: none !important; }
+}
+/* while a new destination is being dragged, the previous search result steps back */
+.chart-svg.dragging .dots, .chart-svg.dragging .arrows, .chart-svg.dragging .search { opacity: .2; }
+.from-search { margin: 10px 0 4px; padding: 10px 12px; border-left: 4px solid var(--magenta); background: #fbeef4; font-size: 16px; line-height: 1.5; }
+.sl-see { flex: none; min-height: 40px; padding: 4px 16px; border-radius: 999px; border: 2px solid var(--ink); background: var(--ink); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.sl-see:hover { background: #0b1a33; }

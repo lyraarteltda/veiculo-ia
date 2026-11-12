@@ -180,6 +180,7 @@ const App = (function () {
   }
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function ptsWord(n) { return n + (Math.abs(n) === 1 ? ' ponto' : ' pontos'); }
   function signed(n) { n = Math.round(n); return (n > 0 ? '+' : (n < 0 ? '−' : '±')) + Math.abs(n); }
   function cut(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
   function reducedMotion() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
@@ -268,7 +269,13 @@ const App = (function () {
   }
   var QFILL = { arb: '#dcefeb', fos: '#cfe2ea', cai: '#e8f0f3', com: '#f4ecd6' };
 
-  function markersFor() { return []; }   // v4.3: pivots and suggestions stay in the tabs, not on the chart
+  // v5: the only markers are the result of the search the person asked for (tab "Para onde ir?").
+  // Pivots and the video's examples stay off the chart (v4.3).
+  function sugsForTarget(cur) { return !!(cur && cur.target && cur.sugTarget && cur.sugTarget.x === cur.target.x && cur.sugTarget.y === cur.target.y && cur.sugs && cur.sugs.length); }
+  function markersFor(cur, mode) {
+    if (mode !== 'rumo' || !sugsForTarget(cur)) return [];
+    return cur.sugs.map(function (s, i) { return { kind: 'sug', n: i + 1, i: i, x: s.x, y: s.y, ok: s.perto, anchor: s.anchor, nome: s.nome, dist: s.dist }; });
+  }
   // Nudge dots that would sit on the boat or on each other — smallest displacement only
   function spreadDots(g, cur, list) {
     var px = pxf(g), py = pyf(g), bx = px(cur.x), by = py(cur.y);
@@ -356,8 +363,30 @@ const App = (function () {
     });
     s.push('</g>');
     if (cur) s.push(projSVG(g, cur.x, cur.y));
+    var so = cur && o.search, sCircles = [];
+    if (so && so.target) {
+      var stx = px(so.target.x), sty = py(so.target.y), byId = {};
+      (so.cands || []).forEach(function (c) { byId[c.id] = c; });
+      s.push('<g class="search' + (so.running ? ' running' : '') + '">');
+      s.push('<ellipse class="s-ring" cx="' + stx + '" cy="' + sty + '" rx="' + ((g.R - g.L) * NEAR / 100) + '" ry="' + ((g.B - g.T) * NEAR / 100) + '" fill="#0f6b6b" fill-opacity=".07" stroke="#0f6b6b" stroke-width="1.8" stroke-dasharray="7 6"/>');
+      if (so.phase === 'run') (so.cands || []).forEach(function (c) {
+        var o2 = c.origem != null ? byId[c.origem] : null;
+        if (!c.measured || !o2 || !o2.measured) return;
+        s.push('<line class="s-link" x1="' + px(o2.x) + '" y1="' + py(o2.y) + '" x2="' + px(c.x) + '" y2="' + py(c.y) + '" stroke="#4a5a74" stroke-width="1.3" stroke-dasharray="3 4" opacity=".75"/>');
+      });
+      var nNew = 0;
+      (so.cands || []).forEach(function (c) {
+        if (!c.measured || (c.chosen && so.phase !== 'run')) return;
+        var fresh = so.shown && !so.shown[c.id];
+        s.push('<circle class="s-dot ' + (c.perto ? 'near' : 'far') + (so.phase === 'fade' ? ' fade' : '') + (fresh ? ' new' : '') + '"' + (fresh ? ' style="animation-delay:' + (nNew++ * 90) + 'ms"' : '') +
+          ' cx="' + px(c.x) + '" cy="' + py(c.y) + '" r="' + (g.r.ex + 1) + '" fill="' + (c.perto ? '#1f8a4c' : '#9aa3b1') + '" stroke="#fffdf7" stroke-width="1.6"><title>' + esc(c.nome + ' — dificuldade ' + c.x + ' · potencial ' + c.y + ' · a ' + ptsWord(c.dist) + ' do destino') + '</title></circle>');
+        if (so.shown) so.shown[c.id] = 1;
+        sCircles.push({ cx: px(c.x), cy: py(c.y), r: g.r.ex + 2 });
+      });
+      s.push('</g>');
+    }
     var marks = cur ? spreadDots(g, cur, markersFor(cur, o.mode)) : [];
-    o.circles = []; o.segs = [];
+    o.circles = sCircles; o.segs = [];
     if (cur) {
       var bx = px(cur.x), by = py(cur.y);
       s.push('<g class="arrows">');
@@ -381,18 +410,23 @@ const App = (function () {
       });
       s.push('</g>');
     }
+    var mkHTML = [];
     if (marks.length) {
+      var s0 = s; s = mkHTML;   // drawn after the destination layer, so a marker on the buoy stays visible
       s.push('<g class="dots">');
       marks.forEach(function (m) {
         var fill = m.kind === 'pivot' ? '#e3f1ee' : (m.ok ? '#0f6b6b' : '#fffdf7');
         var stroke = m.kind === 'sug' && !m.ok ? '#7a8494' : '#0f6b6b';
         var tc = m.kind === 'sug' && m.ok ? '#ffffff' : (m.kind === 'sug' ? '#4a5a74' : '#0f6b6b');
-        s.push('<circle cx="' + m.cx + '" cy="' + m.cy + '" r="' + g.r.dot + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2.2"/>' +
-          '<text x="' + m.cx + '" y="' + (m.cy + g.fz.num * 0.35) + '" text-anchor="middle" font-family="Menlo,Consolas,monospace" font-size="' + g.fz.num + '" font-weight="700" fill="' + tc + '">' + m.n + '</text>');
-        if (m.anchor) s.push(anchorGlyph(m.cx + g.r.dot * 0.85, m.cy - g.r.dot * 0.85, 7.5));
+        s.push('<g class="mk' + (o.mode === 'rumo' && m.kind === 'sug' ? ' mk-sug' : '') + '" data-sug="' + m.i + '"><title>' + esc(m.n + '. ' + (m.nome || '') + (m.dist != null ? ' — a ' + ptsWord(m.dist) + ' do destino' : '')) + '</title>' +
+          '<circle class="mk-hit" cx="' + m.cx + '" cy="' + m.cy + '" r="' + (g.r.dot + 9) + '" fill="#fffdf7" fill-opacity="0"/>' +
+          '<circle class="mk-c" cx="' + m.cx + '" cy="' + m.cy + '" r="' + g.r.dot + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2.2"/>' +
+          '<text x="' + m.cx + '" y="' + (m.cy + g.fz.num * 0.35) + '" text-anchor="middle" font-family="Menlo,Consolas,monospace" font-size="' + g.fz.num + '" font-weight="700" fill="' + tc + '">' + m.n + '</text>' +
+          (m.anchor ? anchorGlyph(m.cx + g.r.dot * 0.85, m.cy - g.r.dot * 0.85, 7.5) : '') + '</g>');
         o.circles.push({ cx: m.cx, cy: m.cy, r: g.r.dot + (m.anchor ? 6 : 0) });
       });
       s.push('</g>');
+      s = s0;
     }
     if (cur) {
       var bx2 = px(cur.x), by2 = py(cur.y), r = g.r.boat;
@@ -411,6 +445,7 @@ const App = (function () {
       }
     }
     s.push('<g class="dest"></g>');
+    if (mkHTML.length) s.push(mkHTML.join(''));
     s.push('<g class="labels" font-family="Georgia,\'Iowan Old Style\',serif" fill="#14284a">');
     var axY = g.B + 66, axX = g.L - 58;   // axis titles: "fácil … difícil" and "baixo … alto" at the ends
     s.push('<g class="ax" font-size="' + g.fz.axis + '" font-style="italic" fill="#2e4366">' +
@@ -594,6 +629,7 @@ const App = (function () {
   function canDrag() { return !!state.cur && !$('result').hidden && !state.busy && !state.sim && !calc.on; }
   function startDrag() {
     var svg = $('chart-host').querySelector('svg'); if (!svg) return;
+    clearTimeout(state.autoT); state.autoT = 0;   // a new drag: the half-second wait starts again on release
     hideLens(true); closeCard(false);
     $('dest-go').hidden = true;
     svg.classList.add('dragging');
@@ -609,27 +645,29 @@ const App = (function () {
     var svg = $('chart-host').querySelector('svg');
     if (svg) { svg.classList.remove('dragging'); var boat = svg.querySelector('.boat'); if (boat) boat.classList.remove('ghost'); setQHL(svg, null); }
     drag.exKey = ''; drawExDots([]);
+    var later = state.renderLater; state.renderLater = false;
     if (commit) commitTarget(drag.x, drag.y);
+    else if (later) renderChart();
     else if (state.cur && state.cur.target) { drawDest(svg, state.g, state.cur.target.x, state.cur.target.y, false); placeDestGo(); }
     else if (svg) { var d = svg.querySelector('.dest'); if (d) while (d.firstChild) d.removeChild(d.firstChild); }
   }
   function commitTarget(x, y) {
     var cur = state.cur; if (!cur) return;
     cur.target = { x: Math.round(clamp(x, 2, 98)), y: Math.round(clamp(y, 2, 98)) };
-    if (cur.sugs && cur.sugs.length && !(cur.sugTarget && cur.sugTarget.x === cur.target.x && cur.sugTarget.y === cur.target.y)) {
-      cur.sugs = []; cur.sugTarget = null;            // old suggestions answered another destination
-      var st = $('sug-status'); if (st) st.textContent = 'Novo destino. Clique em "Sugerir negócios para chegar aqui".';
-    }
+    var answered = sugsForTarget(cur), same = !!(state.search && sameDest(state.search.target, cur.target));
+    if (!answered && cur.sugs && cur.sugs.length) { cur.sugs = []; cur.sugTarget = null; cur.searchMeta = null; }   // old suggestions answered another destination
+    if (state.search && !same) cancelSearch();       // v5.1: a new destination cancels the search in progress; a new one starts below
     lsSet(CURRENT_SLOT, cur);
     announce('Destino: ' + destText(cur));
     if (state.tab !== 'rumo') setTab('rumo'); else { renderChart(); renderRumo(); }
+    if (!answered && !same) scheduleAutoSearch();   // releasing the pin already thinks
   }
   function announce(t) { var a = $('dest-live'); if (a) a.textContent = t; }
 
   // pointer handling: mouse/pen drag anywhere on the board; touch only from the boat handle
   function onDown(e) {
     if (!canDrag() || e.pointerType === 'touch' || e.button !== 0) return;
-    if (e.target.closest && e.target.closest('.zinfo,.dest-go,#chart-pop,#zone-card')) return;
+    if (e.target.closest && e.target.closest('.zinfo,.dest-go,#chart-pop,#zone-card,.mk-sug')) return;
     var d = toData(e); if (!d || !d.inside) return;
     drag.pending = true; drag.active = false; drag.kbd = false; drag.id = e.pointerId; drag.sx = e.clientX; drag.sy = e.clientY;
     try { $('chart-host').setPointerCapture(e.pointerId); } catch (_) {}
@@ -694,7 +732,7 @@ const App = (function () {
     }
     if (k === 'Enter') {
       e.preventDefault();
-      if (drag.kbd) { drag.kbd = false; endDrag(true); }
+      if (drag.kbd) { drag.kbd = false; endDrag(true); return; }   // releasing the pin by keyboard: the search starts by itself
       if (state.cur.target) suggest(); else toast('Use as setas para escolher um destino no gráfico.');
     }
   }
@@ -734,6 +772,16 @@ const App = (function () {
     if (reducedMotion()) { if (fromButton) openConta(); return; }   // reduced motion: the final state, no animation
     svg = $('chart-host').querySelector('svg');
     hideLens(true); closeCard(false);
+    calcLayer(svg, g);
+    svg.classList.add('calc-on');
+    calc.on = true; calc.svg = svg; calc.steps = calcSteps(cur.rubric, cur.legal.nota); calc.i = -1; calc.to = { x: 0, y: 0 }; calc.capBottom = cur.y >= 55; calc.endMove = 0; calc.endHold = 0;
+    $('boat-handle').hidden = true; $('dest-go').hidden = true;
+    var b = $('calc-btn'); if (b) { b.hidden = false; b.textContent = '■ Pular para o fim'; }
+    calcPlace(0, 0);
+    calcNext(performance.now());
+    calc.raf = requestAnimationFrame(calcTick);
+  }
+  function calcLayer(svg, g) {
     var L = svgEl('g', { 'class': 'calc' }, svg), fz = g.fz.num;
     svgEl('g', { 'class': 'calc-trail' }, L);
     svgEl('line', { 'class': 'calc-p cpx', stroke: '#b5246b', 'stroke-width': 1.4, 'stroke-dasharray': '4 4', opacity: '.6' }, L);
@@ -744,13 +792,29 @@ const App = (function () {
     svgEl('rect', { rx: 6, fill: '#14284a', opacity: '.94' }, cap);
     svgEl('text', { 'class': 'cc1', 'font-family': 'Georgia,serif', 'font-weight': 700, 'font-size': g.fz.ro, fill: '#fffdf7' }, cap);
     svgEl('text', { 'class': 'cc2', 'font-family': 'Georgia,serif', 'font-style': 'italic', 'font-size': g.fz.ro, fill: '#f4c9dc' }, cap);
+    return L;
+  }
+  // v5.1: "Avaliar a fundo" on a card — the boat sails from where the old idea was to where the new one lands
+  function playTravel(from, label) {
+    var cur = state.cur, svg = $('chart-host').querySelector('svg'), g = state.g;
+    if (!cur || !cur.rubric || !svg || !g || !from || reducedMotion()) return false;
+    if (calc.on) stopCalc(false);
+    hideLens(true); closeCard(false);
+    var L = calcLayer(svg, g), px = pxf(g), py = pyf(g);
+    L.insertAdjacentHTML('afterbegin', '<g class="calc-ghost" opacity=".35">' + boatInner(px(from.x), py(from.y), g.r.boat, from.anchor) + '</g>');
+    svgEl('line', { 'class': 'calc-wake', x1: px(from.x), y1: py(from.y), x2: px(cur.x), y2: py(cur.y) }, L.querySelector('.calc-trail'));
+    if (cur.anchor) L.querySelector('.calc-boat').insertAdjacentHTML('beforeend', '<g class="calc-anchor">' + anchorGlyph(g.r.boat * 0.78, g.r.boat * 0.78, 10) + '</g>');
     svg.classList.add('calc-on');
-    calc.on = true; calc.svg = svg; calc.steps = calcSteps(cur.rubric, cur.legal.nota); calc.i = -1; calc.to = { x: 0, y: 0 }; calc.capBottom = cur.y >= 55;
+    calc.on = true; calc.svg = svg; calc.steps = []; calc.i = 0; calc.capBottom = cur.y >= 55 && from.y >= 40;
+    calc.from = { x: from.x, y: from.y }; calc.to = { x: cur.x, y: cur.y }; calc.phase = 'end'; calc.endMove = 1500; calc.endHold = 2800;
     $('boat-handle').hidden = true; $('dest-go').hidden = true;
     var b = $('calc-btn'); if (b) { b.hidden = false; b.textContent = '■ Pular para o fim'; }
-    calcPlace(0, 0);
-    calcNext(performance.now());
+    calcCaption('Indo para: ' + label, 'dificuldade ' + from.x + ' → ' + cur.x + ' · potencial ' + from.y + ' → ' + cur.y + (g.compact ? '' : ' · ' + QUADS[cur.q].nome + (cur.anchor ? ' ⚓' : '')));
+    setQHL(svg, cur.q);
+    calcPlace(from.x, from.y);
+    calc.t0 = performance.now();
     calc.raf = requestAnimationFrame(calcTick);
+    return true;
   }
   function calcNext(now) {
     var cur = state.cur, g = state.g;
@@ -773,9 +837,9 @@ const App = (function () {
   }
   function calcTick(now) {
     if (!calc.on) return;
-    var t = now - calc.t0, u = Math.min(1, t / (calc.phase === 'end' ? 260 : MOVE_MS)), e = 1 - Math.pow(1 - u, 3);
+    var t = now - calc.t0, u = Math.min(1, t / (calc.phase === 'end' ? (calc.endMove || 260) : MOVE_MS)), e = calc.endMove ? (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2) : 1 - Math.pow(1 - u, 3);
     calcPlace(calc.from.x + (calc.to.x - calc.from.x) * e, calc.from.y + (calc.to.y - calc.from.y) * e);
-    if (t >= (calc.phase === 'end' ? END_MS : STEP_MS)) { if (calc.phase === 'end') { stopCalc(true); return; } calcNext(now); }
+    if (t >= (calc.phase === 'end' ? (calc.endHold || END_MS) : STEP_MS)) { if (calc.phase === 'end') { stopCalc(true); return; } calcNext(now); }
     calc.raf = requestAnimationFrame(calcTick);
   }
   function calcPlace(x, y) {
@@ -797,7 +861,10 @@ const App = (function () {
     t1.textContent = l1; t2.textContent = l2;
     t1.setAttribute('x', 0); t2.setAttribute('x', 0);
     var fz = g.fz.ro, maxW = g.R - g.L - 16;
-    [t1, t2].forEach(function (t) { var f = fz; t.setAttribute('font-size', f); while (bboxOf(t).w > maxW - 20 && f > 18) { f -= 1; t.setAttribute('font-size', f); } });
+    [t1, t2].forEach(function (t) {
+      var f = fz; t.setAttribute('font-size', f); while (bboxOf(t).w > maxW - 20 && f > 18) { f -= 1; t.setAttribute('font-size', f); }
+      var txt = t.textContent; while (bboxOf(t).w > maxW - 20 && txt.length > 8) { txt = txt.slice(0, -2).replace(/\s+$/, ''); t.textContent = txt + '…'; }
+    });
     var w = Math.min(maxW, Math.max(bboxOf(t1).w, bboxOf(t2).w) + 22), h = fz * 2.4 + 14;
     var x = (g.L + g.R) / 2 - w / 2, y = calc.capBottom ? g.B - (g.compact ? 104 : 56) - h : g.T + (g.compact ? 100 : 52);   // clear of the corner names (2 lines on the phone)
     rect.setAttribute('x', x); rect.setAttribute('y', y); rect.setAttribute('width', w); rect.setAttribute('height', h);
@@ -831,7 +898,7 @@ const App = (function () {
     if (calc.on) stopCalc(false);
     var src = init && init.rub ? init.rub : cur.rubric, rub = {};
     RKEYS.forEach(function (k) { rub[k] = src[k].nota; });
-    state.sim = { rub: rub, legal: cur.legal.nota, label: (init && init.label) || '' };
+    state.sim = { rub: rub, legal: init && init.legal != null ? init.legal : cur.legal.nota, label: (init && init.label) || '' };
     document.documentElement.style.setProperty('--hdr', Math.round(headerBottom()) + 'px');
     $('sim-panel').hidden = false; $('chart-card').classList.add('sim-on');
     var stu = document.querySelector('.studio'); if (stu) stu.classList.add('sim-mode');
@@ -914,7 +981,7 @@ const App = (function () {
     var simCur = cur && state.sim ? simCurOf(cur, state.sim) : null;
     state.simCur = simCur;
     var o = { idp: 'c', cur: simCur || cur, ghost: simCur ? { x: cur.x, y: cur.y, anchor: cur.anchor } : null, tagText: simCur ? 'Simulação' : 'Sua ideia',
-      mode: simCur ? 'none' : state.chartMode, iw: 30 / scale, target: cur && cur.target, showHist: !simCur && $('toggle-history') && $('toggle-history').checked, history: lsGet(HISTORY_STORE, []).map(normalizeEntry) };
+      mode: simCur ? 'none' : state.chartMode, iw: 30 / scale, target: cur && cur.target, search: simCur ? null : searchOverlay(cur), showHist: !simCur && $('toggle-history') && $('toggle-history').checked, history: lsGet(HISTORY_STORE, []).map(normalizeEntry) };
     host.innerHTML = buildSVG(g, o);
     host.classList.toggle('can-drag', !!cur && !$('result').hidden);
     var svg = host.querySelector('svg'), res = null;
@@ -925,6 +992,13 @@ const App = (function () {
     hideLens(true);
     updateHint();
     updateReading();
+  }
+  function searchOverlay(cur) {
+    if (!cur || !cur.target || state.chartMode !== 'rumo') return null;
+    var S = state.search;
+    if (S && sameDest(S.target, cur.target)) return S;   // the live search (or how it ended)
+    if (sugsForTarget(cur)) return { target: cur.sugTarget, cands: [], phase: 'done' };   // after a reload: the ring; the 5 markers come from the cards
+    return null;
   }
   // One reading next to the chart: the measured position, in words (v4)
   function updateReading() {
@@ -963,20 +1037,23 @@ const App = (function () {
     h.style.left = Math.round(p.x - 28) + 'px'; h.style.top = Math.round(p.y - 28) + 'px';
     h.hidden = false;
   }
-  // The floating action next to the buoy has three states: "Sugerir…" (new destination),
-  // "Procurando…" (model working) and "Ver as sugestões ↓" (answer is in; scrolls to the list).
+  // The floating action next to the buoy (v5): only "Pensar em negócios para este destino", when no search ran for the
+  // destination (too close to the boat, or no key). While thinking and after, the line under the chart carries the state.
   function placeDestGo() {
     var b = $('dest-go'), svg = $('chart-host').querySelector('svg'), g = state.g, cur = state.cur;
     if (!b) return;
-    var done = cur && cur.target && cur.sugTarget && cur.sugTarget.x === cur.target.x && cur.sugTarget.y === cur.target.y && cur.sugs && cur.sugs.length;
-    if (!cur || !cur.target || !svg || $('result').hidden || state.sim || calc.on) { b.hidden = true; return; }
-    var mode = state.sugBusy ? 'busy' : (done ? 'ver' : 'go');
+    var done = sugsForTarget(cur), S = state.search;
+    if (!cur || !cur.target || !svg || $('result').hidden || state.sim || calc.on || drag.active || drag.kbd || state.autoT) { b.hidden = true; return; }
+    if (S && S.running) { b.hidden = true; return; }   // v5.1: while thinking, the line under the chart says what is happening (with "Parar")
+    if (done) { b.hidden = true; return; }   // v5: "Ver os cartões ↓" is in the line under the chart, so nothing covers the 5 markers
+    var mode = 'go';
+    if (S && sameDest(S.target, cur.target)) { b.hidden = true; return; }   // a search ran here and found nothing: "Pensar de novo" is in the panel
     if (mode === 'ver' && state.seenKey === sugKey(cur)) { b.hidden = true; return; }   // list already seen: keep the board clean
     if (b.getAttribute('data-mode') !== mode) {
       b.setAttribute('data-mode', mode);
       if (mode === 'busy') b.textContent = 'Procurando negócios…';
       else if (mode === 'ver') { var perto = cur.sugs.filter(function (s) { return s.perto; }).length; b.textContent = narrow() ? 'Ver as ' + cur.sugs.length + ' sugestões ↓' : 'Ver as sugestões ↓ · ' + perto + ' de ' + cur.sugs.length + ' perto'; }
-      else b.textContent = 'Sugerir negócios para chegar aqui';
+      else b.textContent = 'Pensar em negócios para este destino';
     }
     b.disabled = mode === 'busy';
     b.setAttribute('aria-busy', mode === 'busy' ? 'true' : 'false');
@@ -984,7 +1061,7 @@ const App = (function () {
     var p = wrapPoint(svg, pxf(g)(cur.target.x), pyf(g)(cur.target.y));
     var wr = $('chart-wrap').getBoundingClientRect(), bw = b.offsetWidth, bh = b.offsetHeight;
     // Next to the buoy, on the first side that covers no corner "i", the boat, the buoy or a numbered dot.
-    var avoid = [].slice.call(document.querySelectorAll('#info-btns .zinfo, #boat-handle, #chart-host .dots > circle, #chart-host .zl, #chart-host .idea-tag')).filter(function (el) { return !el.hidden; }).map(function (el) {
+    var avoid = [].slice.call(document.querySelectorAll('#info-btns .zinfo, #boat-handle, #chart-host .dots .mk-c, #chart-host .s-dot, #chart-host .zl, #chart-host .idea-tag')).filter(function (el) { return !el.hidden; }).map(function (el) {
       var r = el.getBoundingClientRect(); return { l: r.left - wr.left - 4, t: r.top - wr.top - 4, r: r.right - wr.left + 4, b: r.bottom - wr.top + 4 };
     });
     avoid.push({ l: p.x - 16, t: p.y - 16, r: p.x + 16, b: p.y + 16 });
@@ -1007,6 +1084,14 @@ const App = (function () {
   function sugKey(cur) { return cur && cur.sugTarget && cur.sugs && cur.sugs.length ? cur.sugTarget.x + ',' + cur.sugTarget.y + ',' + cur.sugs.map(function (x) { return x.nome; }).join('|') : ''; }
   function markSugsSeen() { var k = sugKey(state.cur); if (k && state.seenKey !== k) { state.seenKey = k; placeDestGo(); } }
   function sugsInView() { var c = document.querySelector('#sug-list .sug-card'); if (!c || $('panel-rumo').hidden) return false; var r = c.getBoundingClientRect(); return r.top < window.innerHeight - 40 && r.bottom > headerBottom() + 40; }
+  function goToCards() {
+    markSugsSeen();
+    if (state.tab !== 'rumo') setTab('rumo');
+    var st = $('sug-status'), hb = headerBottom();
+    if (st) window.scrollBy({ top: st.getBoundingClientRect().top - hb - 16, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    var first = document.querySelector('#sug-list .sug-card h5');
+    if (first) { first.setAttribute('tabindex', '-1'); try { first.focus({ preventScroll: true }); } catch (e) {} }
+  }
   function onDestGo() {
     var b = $('dest-go');
     if (b.getAttribute('data-mode') === 'ver') {
@@ -1132,7 +1217,26 @@ const App = (function () {
   // v4.3: the chart shows only the member's idea — no example lens on hover or tap; it only drags
   function onChartMove(evt) { onDragMove(evt); }
   function onChartLeave() { if (!state.lens.pinned && !drag.active) hideLens(false); }
-  function onChartClick() { /* v4.3: a tap or click on the chart opens nothing */ }
+  function onChartClick(e) {   // v4.3: the chart opens nothing; v5: a search marker brings its card into view
+    var mk = e && e.target && e.target.closest && e.target.closest('.mk-sug');
+    if (!mk || state.justDragged) return;
+    showSugCard(parseInt(mk.getAttribute('data-sug'), 10), true);
+  }
+  function hlSug(i, on) {
+    var c = document.querySelector('#sug-list .sug-card[data-i="' + i + '"]'), m = document.querySelector('#chart-host .mk-sug[data-sug="' + i + '"]');
+    if (c) c.classList.toggle('hl', !!on); if (m) m.classList.toggle('hl', !!on);
+  }
+  function showSugCard(i, scroll) {
+    var c = document.querySelector('#sug-list .sug-card[data-i="' + i + '"]'); if (!c) return;
+    document.querySelectorAll('#sug-list .sug-card.hl, #chart-host .mk-sug.hl').forEach(function (el) { el.classList.remove('hl'); });
+    hlSug(i, true); markSugsSeen();
+    clearTimeout(state.hlT); state.hlT = setTimeout(function () { hlSug(i, false); }, 2600);
+    if (scroll) {
+      var r = c.getBoundingClientRect(), hb = headerBottom();
+      if (r.top < hb + 8 || r.bottom > window.innerHeight - 8) window.scrollBy({ top: r.top - hb - 16, behavior: reducedMotion() ? 'auto' : 'smooth' });
+      var h = c.querySelector('h5'); if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (err) {} }
+    }
+  }
   function onPopClick(evt) {
     var btn = evt.target.closest('.pop-item');
     if (!btn) return;
@@ -1204,7 +1308,7 @@ const App = (function () {
     return k && k.key ? k : null;
   }
   // Throws { emptyContent:true } when the model answered with empty content (COR-035).
-  function fetchContent(messages, temperature, maxTokens) {
+  function fetchContent(messages, temperature, maxTokens, sig) {
     var key = activeKey();
     if (!key) return Promise.reject(new Error('NO_KEY'));
     var model = (window.ApiKeyManager && ApiKeyManager.getModel) ? ApiKeyManager.getModel() : 'google/gemini-3.8-flash';
@@ -1212,7 +1316,10 @@ const App = (function () {
     var body = { model: model, messages: messages, temperature: (temperature == null ? 0.5 : temperature), max_tokens: maxTokens || 8000 };
     if (!isDeepSeek) body.reasoning = { effort: 'low' }; // COR-034/035
     function doFetch() {
+      if (sig && sig.aborted) { var ab = new Error('Busca interrompida.'); ab.aborted = true; return Promise.reject(ab); }
       var ctrl = ('AbortController' in window) ? new AbortController() : null;
+      if (sig && ctrl) sig.ctrls.push(ctrl);
+      state.net = (state.net || 0) + 1;
       var to = ctrl ? setTimeout(function () { ctrl.abort(); }, 180000) : null;
       return fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -1238,6 +1345,7 @@ const App = (function () {
         });
       }, function (err) {
         if (to) clearTimeout(to);
+        if (sig && sig.aborted) { var ab2 = new Error('Busca interrompida.'); ab2.aborted = true; throw ab2; }
         if (err && err.name === 'AbortError') throw new Error('O modelo demorou demais para responder. Tente de novo ou escolha um modelo mais rápido.');
         throw new Error('Falha de rede ao falar com a OpenRouter. Verifique sua conexão.');
       });
@@ -1266,12 +1374,13 @@ const App = (function () {
     var s4 = s3.replace(/[“”]/g, '"').replace(/[‘’]/g, "'"); o = tryParse(s4); if (o) return o;
     return null;
   }
-  function callJSON(messages, maxTokens) {
-    return fetchContent(messages, 0.5, maxTokens).then(function (txt) {
+  function callJSON(messages, maxTokens, sig) {
+    return fetchContent(messages, 0.5, maxTokens, sig).then(function (txt) {
       var obj = parseJSONLadder(txt);
       if (obj) return obj;
       var strict = messages.concat([{ role: 'user', content: 'Sua resposta anterior NÃO era um JSON válido. Responda novamente APENAS com o objeto JSON pedido, com aspas retas ("), sem markdown, sem comentários, sem texto antes ou depois.' }]);
-      return fetchContent(strict, 0.3, maxTokens).then(function (txt2) { // COR-032 reroll
+      if (sig && sig.aborted) { var ab = new Error('Busca interrompida.'); ab.aborted = true; throw ab; }
+      return fetchContent(strict, 0.3, maxTokens, sig).then(function (txt2) { // COR-032 reroll
         var obj2 = parseJSONLadder(txt2);
         if (obj2) return obj2;
         throw new Error('O modelo não devolveu um JSON válido. Tente gerar novamente.');
@@ -1352,50 +1461,121 @@ const App = (function () {
     return [{ role: 'system', content: sys }, { role: 'user', content: user }];
   }
 
-  // What KIND of business lives at the destination, in words, plus the video's example businesses
-  // nearest to that point. Deliberately no formula and no target averages: with numbers the model
-  // back-solves the scores to land on the point, and "chega perto" stops meaning anything (COR-071).
-  function targetProfile(t) {
-    var dx = t.x <= 35 ? 'fáceis de operar (pouca mão de obra, habilidade comum, pouco capital, pouca regulação, operação simples, resultado rápido)'
-      : t.x >= 65 ? 'difíceis de operar (habilidade rara, capital, licenças, operação pesada ou anos para maturar, que afastam os concorrentes)'
-      : 'de dificuldade média (alguma habilidade, capital ou operação, mas nada que leve anos)';
-    var dy = t.y >= 65 ? 'com alto potencial financeiro (mercado grande, margem alta, crescem sem crescer a equipe na mesma proporção, com fosso ou vento a favor, cliente recorrente, funcionam sem o dono)'
-      : t.y <= 35 ? 'com baixo potencial financeiro (teto baixo, margem apertada ou muita concorrência)'
-      : 'com potencial financeiro médio (boa margem ou bom mercado, mas não os dois com folga)';
-    var near = EXAMPLES.map(function (e) { return { e: e, d: Math.hypot(e.x - t.x, e.y - t.y) }; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 3).map(function (o) { return o.e.t; });
-    return [
-      'O QUE EXISTE NESSE DESTINO: negócios ' + dx + ' e ' + dy + '. Só como referência do perfil, não para copiar: ' + near.join(', ') + ' ficam perto desse ponto no vídeo. Procure negócios com esse perfil que reaproveitem as competências e o histórico da pessoa.',
-      'Pontue cada sugestão com honestidade, como se fosse avaliá-la do zero, sem mirar números: a posição sai da conta da ferramenta, e uma nota inflada para "chegar" engana a pessoa.'
-    ].join('\n');
+  // ── v5: a reasoned search to the destination ─────────────────────────────
+  // GENERATOR: understands the person and proposes businesses the SAME person could open (never scores).
+  // JUDGE (blind): scores each business from scratch; it never sees the destination, the current position or the gap.
+  // The tool places each one with position(); rounds 2–3 give the generator the computed positions so it changes the
+  // BUSINESS (not the scores) — no video examples in any prompt (COR-071/073).
+  var MOVES = { produto_curso: 'vender produto ou curso no lugar da hora', recorrente: 'serviço avulso → contrato recorrente', estrutura: 'agência → estúdio ou aluguel de estrutura', propriedade: 'licenciar ou criar propriedade intelectual', ferramenta: 'ferramenta ou SaaS do próprio processo', plataforma: 'marketplace ou plataforma', publico_rico: 'público mais rico ou mais velho', sem_glamour: 'lado "sem glamour" do mesmo mercado', regulatoria: 'janela regulatória', rollup: 'roll-up ou franquia', midia: 'mídia ou audiência própria', enxuta: 'versão mais simples ou mais enxuta do mesmo serviço', outro: 'outro movimento' };
+  var SHORT = { trabalho: 'mão de obra', habilidade: 'habilidade exigida', capital: 'capital', regulacao: 'regulação', operacao: 'complexidade', tempo: 'tempo até maturar', teto: 'teto de mercado', margem: 'margem', escala: 'escala', fosso: 'fosso', ventos: 'vento a favor', recorrencia: 'recorrência', transferivel: 'independência do fundador', concorrencia: 'concorrência' };
+  function axisWords(d, up, down) { var a = Math.abs(d); if (a < 8) return 'parecido'; return (a >= 25 ? 'bem ' : '') + (d > 0 ? up : down); }
+  function destWords(cur, t) {
+    var dx = t.x - cur.x, dy = t.y - cur.y;
+    var w = [axisWords(-dx, 'mais fácil', 'mais difícil'), axisWords(dy, 'mais potencial financeiro', 'menos potencial financeiro')];
+    return 'um negócio ' + (w[0] === 'parecido' ? 'de dificuldade parecida' : w[0]) + ' e ' + (w[1] === 'parecido' ? 'com potencial financeiro parecido' : 'com ' + w[1]) +
+      ' (diferença desejada: ' + signed(dy) + ' de potencial, ' + signed(dx) + ' de dificuldade; quadrante ' + QUADS[quad(t.x, t.y)].nome + ': ' + QUADS[quad(t.x, t.y)].eixo + ')';
   }
-  function sugMessages(cur, t, comp, hist, obj) {
-    var rubNotes = RKEYS.map(function (k) { return k + '=' + cur.rubric[k].nota; }).join(', ');
-    var tq = quad(t.x, t.y);
-    var sys = [
-      'Você sugere negócios PARECIDOS com a ideia de uma pessoa, usando o framework "Índice do Idiota". A ferramenta calcula a posição de cada sugestão com uma fórmula fixa a partir das notas que você der — e mede a distância até o destino pelo número calculado, não pela sua opinião. Então pontue com honestidade.',
-      KB,
-      'RÚBRICA (as MESMAS 14 notas inteiras 0–10 da avaliação):\n' + RUBRIC_DEFS,
-      'Também "parece_legal" (0–10).',
-      CALIB,
-      'FONTES PERMITIDAS (cite UMA por sugestão, pelo id):\n' + SOURCE_IDS.join(', '),
-      'REGRAS: sugira exatamente 5 negócios reais e concretos no Brasil. Cada um deve reaproveitar as competências e o histórico da pessoa (diga qual) e servir aos objetivos dela (diga como). Eles devem tender a cair PERTO DO DESTINO, mas NÃO force: se um parecido não chega lá, as notas devem mostrar isso. Não escreva nome de quadrante nem número de veículo nos textos.',
-      LANG,
-      'Responda APENAS com um objeto JSON neste formato exato (sem markdown):',
-      '{"sugestoes":[{"nome":"até 6 palavras","descricao":"1 a 2 frases: o que vende e para quem","porque_parecido":"1 frase: qual competência ou parte do histórico reaproveita","como_serve":"1 frase: como serve aos objetivos","rubrica":{"trabalho":0,"habilidade":0,"capital":0,"regulacao":0,"operacao":0,"tempo":0,"teto":0,"margem":0,"escala":0,"fosso":0,"ventos":0,"recorrencia":0,"transferivel":0,"concorrencia":0},"parece_legal":0,"fonte":"id"}]}'
-    ].join('\n\n');
-    var user = [
-      'IDEIA ATUAL: ' + cur.ideia,
-      cur.contexto ? 'CONTEXTO: ' + cur.contexto : '',
-      'POSIÇÃO ATUAL (calculada): ' + posText(cur) + '.',
-      'NOTAS ATUAIS: ' + rubNotes + '; parece_legal=' + cur.legal.nota,
-      'DESTINO escolhido no gráfico: dificuldade ' + t.x + '/100, potencial financeiro ' + t.y + '/100 → ' + QUADS[tq].nome + ' (' + QUADS[tq].eixo + '). Mudança desejada: ' + signed(t.y - cur.y) + ' de potencial financeiro, ' + signed(t.x - cur.x) + ' de dificuldade.',
-      targetProfile(t),
-      'COMPETÊNCIAS: ' + (comp || 'não informado'),
-      'HISTÓRICO: ' + (hist || 'não informado'),
-      'OBJETIVOS: ' + (obj || GOALS[cur.goal].obj)
-    ].filter(Boolean).join('\n\n');
+  function criteriaGuide() {
+    var line = function (r) { return '- ' + r.label + ': ' + r.hint; };
+    return 'O QUE MOVE A DIFICULDADE (fica mais fácil quando estes critérios ficam mais baixos):\n' + RUBRIC.filter(function (r) { return r.axis === 'x'; }).map(line).join('\n') +
+      '\n\nO QUE MOVE O POTENCIAL FINANCEIRO (sobe quando estes critérios sobem; a concorrência conta contra):\n' + RUBRIC.filter(function (r) { return r.axis === 'y'; }).map(line).join('\n');
+  }
+  var MOVES_TXT = 'MOVIMENTOS DE MODELO DE NEGÓCIO (para espalhar os candidatos; não é lista para copiar; use a chave):\n' + Object.keys(MOVES).map(function (k) { return '- ' + k + ': ' + MOVES[k]; }).join('\n');
+  function personText(cur, comp, hist, obj) {
+    var rub = CALC_ORDER.map(function (k) { return '- ' + rubricDef(k).label + ': ' + cur.rubric[k].nota + '/10' + (cur.rubric[k].porque ? ' — ' + cur.rubric[k].porque : ''); }).join('\n');
+    return ['IDEIA: ' + cur.ideia, cur.contexto ? 'CONTEXTO: ' + cur.contexto : '', 'OBJETIVO: ' + (GOALS[cur.goal] ? GOALS[cur.goal].label : ''),
+      cur.report && cur.report.diagnostico ? 'DIAGNÓSTICO DA FERRAMENTA: ' + cur.report.diagnostico : '', 'NOTAS ATUAIS DO NEGÓCIO (com os porquês):\n' + rub,
+      'COMPETÊNCIAS INFORMADAS: ' + (comp || 'não informado — infira da ideia e do contexto'), 'HISTÓRICO INFORMADO: ' + (hist || 'não informado — infira da ideia e do contexto'),
+      'OBJETIVOS INFORMADOS: ' + (obj || (GOALS[cur.goal] ? GOALS[cur.goal].obj : ''))].filter(Boolean).join('\n\n');
+  }
+  function genMessages1(cur, t, comp, hist, obj) {
+    var sys = ['Você é um estrategista de negócios. Pense na PESSOA por trás desta ideia: o que ela já sabe fazer, o que ela já tem (equipamento, carteira de clientes, audiência, marca, contatos) e que requisitos ela já cumpre. Depois pense em negócios CONCRETOS no Brasil que ESTA MESMA PESSOA conseguiria abrir reaproveitando isso, e que tendam a ir na direção pedida.',
+      criteriaGuide(), MOVES_TXT,
+      'REGRAS: proponha de 10 a 12 candidatos, espalhados por movimentos diferentes. Cada um diz o que vende e para quem, qual competência ou ativo da pessoa reaproveita, qual movimento faz e por que deve ir na direção pedida. Nada de negócio genérico sem ligação com a pessoa. Você NÃO dá notas nem posições: um avaliador independente mede cada um depois.',
+      LANG, 'Responda APENAS com um objeto JSON neste formato exato (sem markdown):',
+      '{"perfil":{"competencias":["até 6"],"ativos":["até 5"],"requisitos":["até 4: o que a pessoa já cumpre"]},"candidatos":[{"nome":"até 6 palavras","descricao":"1 frase: o que vende e para quem","aproveita":"1 frase: competência ou ativo da pessoa que reaproveita","movimento":"chave","direcao":"1 frase: por que deve ir na direção pedida"}]}'].join('\n\n');
+    var user = [personText(cur, comp, hist, obj), 'POSIÇÃO ATUAL: dificuldade ' + cur.x + ', potencial ' + cur.y + ' (' + QUADS[quad(cur.x, cur.y)].nome + ').', 'PARA ONDE A PESSOA QUER IR: ' + destWords(cur, t) + '.'].join('\n\n');
     return [{ role: 'system', content: sys }, { role: 'user', content: user }];
   }
+  // Blind judge: takes ONLY the person's profile and the list of businesses (no destination, no position, no gap).
+  function judgeMessages(profile, list) {
+    var sys = ['Você é um avaliador independente de negócios. Para CADA negócio da lista, dê as 14 notas inteiras de 0 a 10 da rúbrica, cada uma com um porquê de no máximo 8 palavras, e o "parece legal". Avalie cada negócio do zero, como ele funcionaria no Brasil para esta pessoa, com honestidade e ceticismo; não infle notas.',
+      KB, 'RÚBRICA:\n' + RUBRIC_DEFS, '"parece_legal" (0–10): quão "legal/glamoroso" o negócio soa num coquetel (10 = todo mundo quer fazer; 0 = ninguém quer dizer que faz).', CALIB, LANG,
+      'Responda APENAS com um objeto JSON neste formato exato (sem markdown), com uma avaliação por negócio, na mesma ordem e com o mesmo número:',
+      '{"avaliacoes":[{"n":1,"rubrica":{"trabalho":{"nota":0,"porque":""},"habilidade":{"nota":0,"porque":""},"capital":{"nota":0,"porque":""},"regulacao":{"nota":0,"porque":""},"operacao":{"nota":0,"porque":""},"tempo":{"nota":0,"porque":""},"teto":{"nota":0,"porque":""},"margem":{"nota":0,"porque":""},"escala":{"nota":0,"porque":""},"fosso":{"nota":0,"porque":""},"ventos":{"nota":0,"porque":""},"recorrencia":{"nota":0,"porque":""},"transferivel":{"nota":0,"porque":""},"concorrencia":{"nota":0,"porque":""}},"parece_legal":{"nota":0,"porque":""}}]}'].join('\n\n');
+    var p = profile || {};
+    var user = ['PERFIL DA PESSOA (o que ela já sabe e já tem): competências: ' + ((p.competencias || []).join('; ') || '—') + '. Ativos: ' + ((p.ativos || []).join('; ') || '—') + '.',
+      'NEGÓCIOS PARA AVALIAR:\n' + list.map(function (c, i) { return (i + 1) + '. ' + c.nome + ' — ' + c.descricao; }).join('\n')].join('\n\n');
+    return [{ role: 'system', content: sys }, { role: 'user', content: user }];
+  }
+  function genMessagesRound(cur, t, profile, far) {
+    var sys = ['Você é o mesmo estrategista. Um avaliador independente já deu as notas e a ferramenta calculou onde cada candidato CAIU. Para cada candidato que ficou LONGE, proponha UMA variação do modelo de negócio — mesma pessoa, mesmas competências e ativos — que mude os critérios na direção certa, e explique em 1 frase o que muda (ex.: "em vez de produzir para cada cliente, vender um curso gravado: menos mão de obra, mais escala"). Você não dá notas: o avaliador mede de novo.',
+      criteriaGuide(), MOVES_TXT, LANG, 'Responda APENAS com um objeto JSON neste formato exato (sem markdown):',
+      '{"variacoes":[{"origem":0,"nome":"até 6 palavras","descricao":"1 frase: o que vende e para quem","aproveita":"1 frase","movimento":"chave","o_que_muda":"1 frase"}]}'].join('\n\n');
+    var p = profile || {};
+    var user = ['PERFIL DA PESSOA: competências: ' + ((p.competencias || []).join('; ') || '—') + '. Ativos: ' + ((p.ativos || []).join('; ') || '—') + '. Requisitos que já cumpre: ' + ((p.requisitos || []).join('; ') || '—') + '.',
+      'NEGÓCIO ATUAL: ' + cur.ideia + ' — caiu em (' + cur.x + ', ' + cur.y + ').', 'DESTINO: (' + t.x + ', ' + t.y + ') — ' + destWords(cur, t) + '.',
+      'CANDIDATOS QUE FICARAM LONGE (posição = (dificuldade, potencial)):\n' + far.map(function (c) {
+        var hi = CALC_ORDER.map(function (k) { return SHORT[k] + ' ' + c.rubric[k].nota; }).join(', ');
+        return '- origem ' + c.id + ': ' + c.nome + ' — caiu em (' + c.x + ', ' + c.y + '), distância ' + c.dist + '. Notas do avaliador: ' + hi + '.';
+      }).join('\n')].join('\n\n');
+    return [{ role: 'system', content: sys }, { role: 'user', content: user }];
+  }
+  function normProfile(p) {
+    p = p || {};
+    var arr = function (a, n) { return (Array.isArray(a) ? a : []).map(clean).filter(Boolean).slice(0, n); };
+    return { competencias: arr(p.competencias, 6), ativos: arr(p.ativos, 5), requisitos: arr(p.requisitos, 4) };
+  }
+  function normCands(arr, round, startId) {
+    return (Array.isArray(arr) ? arr : []).slice(0, 12).map(function (c, i) {
+      c = c || {};
+      var mv = String(clean(c.movimento) || '').toLowerCase().replace(/[^a-z_]/g, '');
+      return { id: startId + i, round: round, nome: stripVehicleNo(clean(c.nome)), descricao: stripVehicleNo(clean(c.descricao)), aproveita: clean(c.aproveita),
+        movimento: MOVES[mv] ? mv : 'outro', direcao: clean(c.direcao), muda: clean(c.o_que_muda), origem: c.origem != null && !isNaN(parseInt(c.origem, 10)) ? parseInt(c.origem, 10) : null };
+    }).filter(function (c) { return c.nome && c.descricao; });
+  }
+  function applyJudge(list, j, t) {
+    var arr = j && Array.isArray(j.avaliacoes) ? j.avaliacoes : (Array.isArray(j) ? j : []);
+    list.forEach(function (c, i) {
+      var a = arr.filter(function (x) { return x && num(x.n, -1) === i + 1; })[0] || arr[i];
+      if (!a || !a.rubrica) return;
+      var rub = normRubric(a.rubrica);
+      var lg = clamp(Math.round(num(a.parece_legal && typeof a.parece_legal === 'object' ? a.parece_legal.nota : a.parece_legal, 5)), 0, 10);
+      var pos = position(rub, lg);
+      c.rubric = rub; c.legal = lg; c.legalAdj = pos.legalAdj; c.x = pos.x; c.y = pos.y; c.q = quad(pos.x, pos.y); c.anchor = anchorOf(rub);
+      c.dist = Math.round(Math.hypot(pos.x - t.x, pos.y - t.y)); c.perto = c.dist <= NEAR; c.measured = true;
+    });
+  }
+  // "O que muda": the criteria that move the point most, from the judge's notes vs. the current notes (in points)
+  function changesList(cur, rub) {
+    return CALC_ORDER.map(function (k) { var r = rubricDef(k); return { k: k, axis: r.axis, d: Math.round((critPts(r, rub[k].nota) - critPts(r, cur.rubric[k].nota)) * 10) / 10, de: cur.rubric[k].nota, para: rub[k].nota, why: rub[k].porque || '' }; })
+      .filter(function (c) { return Math.abs(c.d) >= 1.5; }).sort(function (a, b) { return Math.abs(b.d) - Math.abs(a.d); }).slice(0, 4);
+  }
+  function changeLabel(c) { return (c.para > c.de ? 'mais ' : 'menos ') + SHORT[c.k]; }
+  function changeEffect(c) { return 'nota ' + c.de + ' → ' + c.para + ' · ' + (c.axis === 'x' ? 'dificuldade ' : 'potencial ') + fmt1(c.d); }
+  function changesText(list) { return list && list.length ? list.map(function (c) { return changeLabel(c) + ' (' + changeEffect(c) + ')' + (c.why ? ': ' + c.why : ''); }).join('; ') : 'quase as mesmas notas'; }
+  function pick5(all) {
+    var sorted = all.filter(function (c) { return c.measured; }).sort(function (a, b) { return a.dist - b.dist; });
+    var out = [], per = {};
+    sorted.forEach(function (c) { if (out.length >= 5) return; var k = c.movimento || 'outro'; if ((per[k] || 0) >= 2) return; per[k] = (per[k] || 0) + 1; out.push(c); });
+    if (out.length < 5) sorted.forEach(function (c) { if (out.length < 5 && out.indexOf(c) === -1) out.push(c); });
+    return out;
+  }
+  // When nothing gets close: say which was closest and what is missing, from its notes
+  function missingText(c, t) {
+    var need = [], over = [];
+    var lowY = ['fosso', 'teto', 'escala', 'recorrencia', 'margem', 'ventos'].filter(function (k) { return c.rubric[k].nota <= 4; }).slice(0, 3);
+    var hiX = ['trabalho', 'habilidade', 'capital', 'regulacao', 'operacao', 'tempo'].filter(function (k) { return c.rubric[k].nota >= 6; }).slice(0, 3);
+    var notas = function (ks) { return ks.length ? ' (' + ks.map(function (k) { return SHORT[k] + ' ' + c.rubric[k].nota + '/10'; }).join(', ') + ')' : ''; };
+    if (c.y < t.y - 5) need.push('mais potencial' + notas(lowY));
+    if (c.x > t.x + 5) need.push('mais facilidade' + notas(hiX));
+    if (c.y > t.y + 5) over.push('passou do destino em potencial');
+    if (c.x < t.x - 5) over.push('ficou mais fácil do que o destino');
+    var txt = need.length ? 'para chegar lá, falta ' + need.join(' e ') : '';
+    if (over.length) txt += (txt ? '; ' : '') + over.join(' e ');
+    return txt || 'a combinação de notas não fecha';
+  }
+
 
   // ── Normalize model output ────────────────────────────────────────────────
   function normItems(arr, max) {
@@ -1484,7 +1664,15 @@ const App = (function () {
       '<div><dt>Quadrante</dt><dd class="v">' + esc(qd.nome) + (cur.anchor ? ' ⚓' : '') + '</dd></div><div><dt>Objetivo</dt><dd>' + esc(GOALS[cur.goal] ? GOALS[cur.goal].label : '—') + '</dd></div></dl>' +
       '<div class="vehicle-plate"><div><p class="vname">' + esc(qd.nome) + ' <span class="hint">· ' + esc(qd.eixo) + '</span></p><p class="vdesc">' + esc(qd.resumo) + '</p></div></div>' +
       (cur.anchor ? anchorLine() : '') +
-      (bnd ? '<p class="edge-line">Fica ' + esc(bnd) + ': leia as duas zonas, a posição exata depende de poucas notas.</p>' : '');
+      (bnd ? '<p class="edge-line">Fica ' + esc(bnd) + ': leia as duas zonas, a posição exata depende de poucas notas.</p>' : '') +
+      fromSearchHTML(cur);
+  }
+  // v5: an idea chosen in the search says where the blind judge had put it and where the full assessment put it
+  function fromSearchHTML(cur) {
+    var f = cur.fromSearch; if (!f || !f.est) return '';
+    var d = f.dest ? Math.round(Math.hypot(cur.x - f.dest.x, cur.y - f.dest.y)) : null;
+    return '<p class="from-search">Veio da busca até o destino' + (f.origem ? ', a partir de "' + esc(f.origem) + '"' : '') + '. O avaliador cego tinha estimado <b>dificuldade ' + f.est.x + ' · potencial ' + f.est.y + '</b>; a avaliação completa, que olha só para este negócio e com mais detalhe, deu <b>dificuldade ' + cur.x + ' · potencial ' + cur.y + '</b>' +
+      (d != null ? ', a ' + ptsWord(d) + ' do destino (' + (d <= NEAR ? 'chega perto' : 'fica longe') + ')' : '') + '.</p>';
   }
   function renderReport() {
     var cur = state.cur, body = $('report-body');
@@ -1542,24 +1730,48 @@ const App = (function () {
       if (Math.hypot(at[0] - cur.x, at[1] - cur.y) < 5) return '';
       return '<button type="button" class="dir-btn" data-dir="' + k + '">' + esc(narrow() && CHIPS[k].short ? CHIPS[k].short : CHIPS[k].label) + '</button>';
     }).join('');
-    $('sug-btn').disabled = !cur.target || state.sugBusy;
+    updateSugBtn();
     prefillObj();
     renderSugs();
+    searchUI();
   }
   function renderSugs() {
     var cur = state.cur, list = $('sug-list'); if (!list) return;
-    if (!cur || !cur.sugs || !cur.sugs.length) { list.innerHTML = ''; return; }
-    var t = cur.sugTarget || cur.target;
-    list.innerHTML = '<p class="sug-head">Para chegar em <b>' + esc(QUADS[quad(t.x, t.y)].nome) + '</b> (dificuldade ' + t.x + ', potencial ' + t.y + ') · ordenado pela distância calculada. A posição vem de uma rúbrica rápida; "Avaliar a fundo" refaz a avaliação completa e ela pode mudar.</p>' + cur.sugs.map(function (s, i) {
-      return '<article class="sug-card ' + (s.perto ? 'vai' : 'nao') + '">' +
+    if (!cur || !sugsForTarget(cur)) { list.innerHTML = ''; renderSearchPrint(); return; }
+    var t = cur.sugTarget, perto = cur.sugs.filter(function (s) { return s.perto; }).length, m = cur.searchMeta || {};
+    var h = ['<p class="sug-head">Para chegar em <b>' + esc(QUADS[quad(t.x, t.y)].nome) + '</b> (dificuldade ' + t.x + ', potencial ' + t.y + '): os ' + cur.sugs.length + ' mais perto' + (m.measured ? ' de ' + m.measured + ' negócios medidos' : '') + ', com no máximo 2 do mesmo movimento. As notas são do avaliador cego e a posição é a conta da ferramenta; "Avaliar a fundo" refaz a avaliação completa e ela pode mudar.</p>'];
+    if (!perto) {
+      var best = cur.sugs[0];
+      h.push('<p class="sug-none"><b>Nenhum chegou perto</b> (até ' + NEAR + ' pontos do destino). O mais perto foi <b>' + esc(best.nome) + '</b>, a ' + ptsWord(best.dist) + ': ' + esc(missingText(best, t)) + '.</p>');
+    }
+    h.push(cur.sugs.map(function (s, i) {
+      var ch = s.mudaNotas || [];
+      return '<article class="sug-card ' + (s.perto ? 'vai' : 'nao') + '" data-i="' + i + '">' +
         '<header><span class="sug-num">' + (i + 1) + '</span><h5>' + esc(s.nome) + '</h5><span class="badge ' + (s.perto ? 'b-vai' : 'b-nao') + '">' + (s.perto ? 'chega perto' : 'fica longe') + '</span></header>' +
-        '<p class="sug-move">a ' + s.dist + ' pontos do destino · ' + signed(s.dy) + ' potencial · ' + signed(s.dx) + ' dificuldade · ' + esc(QUADS[s.q].nome) + (s.anchor ? ' · ⚓ depende de você' : '') + '</p>' +
-        (s.descricao ? '<p>' + esc(s.descricao) + '</p>' : '') +
-        (s.porque ? '<p><b>Por que é parecido:</b> ' + esc(s.porque) + '</p>' : '') +
-        (s.serve ? '<p><b>Como serve aos seus objetivos:</b> ' + esc(s.serve) + ' ' + srcChip(s.fonte) + '</p>' : '') +
-        '<div class="sug-actions"><button type="button" class="btn-primary sug-eval" data-i="' + i + '">Avaliar a fundo</button><button type="button" class="btn-secondary sug-save" data-i="' + i + '">Salvar no histórico</button></div>' +
+        (s.descricao ? '<p class="sug-desc">' + esc(s.descricao) + '</p>' : '') +
+        (s.aproveita ? '<p><b>Aproveita:</b> ' + esc(s.aproveita) + '</p>' : '') +
+        (s.muda || s.mudaNotas ? '<div class="sug-change"><p><b>O que muda:</b> ' + esc(s.muda || '') + '</p>' +
+        (ch.length ? '<ul class="sug-crit">' + ch.map(function (c) { return '<li><b>' + esc(changeLabel(c)) + '</b> <span class="sc-eff">(' + esc(changeEffect(c)) + ')</span>' + (c.why ? ': ' + esc(c.why) : '') + '</li>'; }).join('') + '</ul>' : '<p class="hint">Quase as mesmas notas do seu negócio.</p>') + '</div>' : (s.porque ? '<p><b>Por que é parecido:</b> ' + esc(s.porque) + '</p>' : '')) +
+        '<p class="sug-move">dificuldade ' + s.x + ' · potencial ' + s.y + ' → ' + esc(QUADS[s.q].nome) + (s.anchor ? ' · ⚓ depende de você' : '') + '<br>a ' + ptsWord(s.dist) + ' do destino · ' + (s.perto ? 'chega perto' : 'fica longe') + '</p>' +
+        (s.movimento ? '<p class="sug-meta">' + esc(MOVES[s.movimento] || MOVES.outro) + (s.round > 1 ? ' · variação da rodada ' + s.round : '') + '</p>' : '') +
+        '<div class="sug-actions"><button type="button" class="btn-primary sug-eval" data-i="' + i + '">Avaliar a fundo</button><button type="button" class="btn-secondary sug-sim" data-i="' + i + '">Ver no simulador</button><button type="button" class="btn-link sug-save" data-i="' + i + '">Salvar no histórico</button></div>' +
         '</article>';
-    }).join('');
+    }).join(''));
+    list.innerHTML = h.join('');
+    renderSearchPrint();
+  }
+  function renderSearchPrint() {
+    var box = $('search-print'), cur = state.cur; if (!box) return;
+    if (!cur || !sugsForTarget(cur)) { box.innerHTML = ''; return; }
+    var t = cur.sugTarget, m = cur.searchMeta || {}, pf = cur.searchProfile;
+    var h = ['<h3>Para onde ir: a busca até o destino</h3><p>Destino: dificuldade ' + t.x + ', potencial ' + t.y + ' → ' + esc(QUADS[quad(t.x, t.y)].nome) + (m.rounds ? '. ' + m.measured + ' negócios medidos em ' + m.rounds + (m.rounds === 1 ? ' rodada' : ' rodadas') + ' (' + m.seconds + ' s); ' + m.perto + ' de ' + cur.sugs.length + ' chegam perto (até ' + NEAR + ' pontos).' : '.') + '</p>'];
+    if (pf) h.push('<p><b>O que a IA entendeu que você já sabe fazer:</b> ' + esc(pf.competencias.join('; ') || '—') + '.' + (pf.ativos.length ? ' <b>O que você já tem:</b> ' + esc(pf.ativos.join('; ')) + '.' : '') + '</p>');
+    cur.sugs.forEach(function (s, i) {
+      h.push('<div class="sug-card"><p><b>' + (i + 1) + '. ' + esc(s.nome) + '</b> — ' + (s.perto ? 'chega perto' : 'fica longe') + ', a ' + ptsWord(s.dist) + ' do destino</p>' + (s.descricao ? '<p>' + esc(s.descricao) + '</p>' : '') +
+        (s.aproveita ? '<p><b>Aproveita:</b> ' + esc(s.aproveita) + '</p>' : '') + (s.muda || (s.mudaNotas && s.mudaNotas.length) ? '<p><b>O que muda:</b> ' + esc([s.muda, s.mudaNotas && s.mudaNotas.length ? changesText(s.mudaNotas) : ''].filter(Boolean).join(' — ')) + '</p>' : '') +
+        '<p>Dificuldade ' + s.x + ' · potencial ' + s.y + ' → ' + esc(QUADS[s.q].nome) + (s.anchor ? ' · ⚓ depende de você' : '') + '</p></div>');
+    });
+    box.innerHTML = h.join('');
   }
   function renderOrigins() {
     $('origins-list').innerHTML = SOURCES.map(function (s) {
@@ -1612,12 +1824,24 @@ const App = (function () {
     setBusy(true);
     hideLens(true); closeCard(false);
     if (state.sim) simClose();
-    $('loading-title').textContent = 'Calculando a posição…';
-    $('loading-sub').textContent = 'A IA está pontuando os 14 critérios da rúbrica.';
-    var prev = state.cur;
-    state.cur = null;
-    renderChart();
-    showState('loading');
+    clearTimeout(state.autoT); state.autoT = 0;
+    if (state.search) cancelSearch();   // a new assessment: the search belonged to the previous idea
+    var prev = state.cur, travel = state.travel && prev ? state.travel : null;
+    state.travel = null;
+    $('loading-title').textContent = travel ? 'Avaliando a fundo: ' + travel.nome + '…' : 'Calculando a posição…';
+    $('loading-sub').textContent = travel ? 'A IA está pontuando os 14 critérios da rúbrica. Quando as notas chegarem, o barco anda até a nova posição.' : 'A IA está pontuando os 14 critérios da rúbrica.';
+    if (travel) {   // v5.1: the old boat stays on the board (with the chosen marker lit) until it can sail to the new idea
+      state.cur = null; showState('loading'); state.cur = prev;
+      ['calc-btn', 'boat-handle', 'dest-go'].forEach(function (id) { var el = $(id); if (el) el.hidden = true; });
+      if (travel.i != null) { var mk = document.querySelector('#chart-host .mk-sug[data-sug="' + travel.i + '"]'); if (mk) mk.classList.add('hl', 'going'); }
+      searchUI();
+      state.cur = null;
+      var cc = $('chart-card'); window.scrollBy({ top: cc.getBoundingClientRect().top - headerBottom() - 8, behavior: reducedMotion() ? 'auto' : 'smooth' });   // after the layout change
+    } else {
+      state.cur = null;
+      renderChart();
+      showState('loading');
+    }
     var goal = state.goal;
     var model = ApiKeyManager.getModel ? ApiKeyManager.getModel() : '';
     callJSON(rubricMessages(ideia, contexto), 6000).then(function (j) {
@@ -1636,12 +1860,13 @@ const App = (function () {
         rubric: rub, legal: legal, legalAdj: pos.legalAdj, x: pos.x, y: pos.y,
         parecidos: (Array.isArray(j.parecidos) ? j.parecidos.map(clean).filter(Boolean).slice(0, 3) : []),
         bil: { veredito: ver, exemplo: clean(b.exemplo), comentario: clean(b.comentario) },
-        pivots: [], report: null, sugs: [], target: null, sugTarget: null
+        pivots: [], report: null, sugs: [], target: travel && travel.target ? { x: travel.target.x, y: travel.target.y } : null, sugTarget: null,
+        fromSearch: travel && travel.est ? { nome: travel.nome, origem: travel.origem || '', est: travel.est, dest: travel.target } : null
       });
       state.cur = cur;
       state.tab = 'diag'; state.chartMode = 'diag';
       renderChart();
-      playCalc(false);
+      if (!(travel && playTravel(travel.from, cur.titulo))) playCalc(false);
       $('loading-title').textContent = QUADS[cur.q].nome + (cur.anchor ? ' ⚓' : '') + '. Escrevendo o diagnóstico…';
       $('loading-sub').textContent = 'A IA está escrevendo o diagnóstico e os pivôs com base nas fontes.';
       return callJSON(reportMessages(cur), 9000).then(function (rep) {
@@ -1659,14 +1884,23 @@ const App = (function () {
       var msg = e && e.message === 'NO_KEY' ? 'Conecte sua chave da OpenRouter para gerar.' : (e && e.message) || 'Erro ao gerar.';
       showState('error', msg);
       renderChart();
-    }).then(function () { setBusy(false); placeHandle(); });
+    }).then(function () { setBusy(false); placeHandle(); updateGenBtn(); });
   }
-  function evaluateIdea(text) {
+  // v5.1: after the first diagnosis the big button must not pass for "find another business"
+  function normTxt(v) { return String(v || '').trim().replace(/\s+/g, ' '); }
+  function updateGenBtn() {
+    var b = $('generate-btn'), hint = $('gen-hint'), cur = state.cur; if (!b) return;
+    var same = !!(cur && cur.rubric && cur.kind !== 'simulacao' && normTxt($('in-ideia').value) === normTxt(cur.ideia) && normTxt($('in-contexto').value) === normTxt(cur.contexto) && state.goal === cur.goal);
+    b.classList.toggle('btn-primary', !same); b.classList.toggle('btn-secondary', same);
+    b.querySelector('.gen-text').textContent = same ? 'Avaliar a mesma ideia de novo' : 'Posicionar no gráfico';
+    if (hint) hint.hidden = !same;
+  }
+  function evaluateIdea(text, travel) {
     $('in-ideia').value = String(text || '').slice(0, 2500); updateCount();
     var c = [($('in-contexto').value || '').trim(), ($('in-comp') && $('in-comp').value.trim()) ? 'Competências: ' + $('in-comp').value.trim() : '', ($('in-hist') && $('in-hist').value.trim()) ? 'Histórico: ' + $('in-hist').value.trim() : ''].filter(Boolean);
     var seen = {}; c = c.filter(function (x) { if (seen[x]) return false; seen[x] = 1; return true; });
     $('in-contexto').value = c.join(' · ').slice(0, 400);
-    window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    if (!travel) window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });   // a chosen card scrolls to the chart in generate(), to watch the boat sail
     generate();
   }
 
@@ -1675,39 +1909,212 @@ const App = (function () {
     var el = $('in-obj'); if (!el) return;
     if (state.objAuto || !el.value.trim()) { el.value = GOALS[state.goal] ? GOALS[state.goal].obj : ''; state.objAuto = true; }
   }
-  function suggest() {
+  // v5.1: releasing the pin starts the search by itself (half a second later, when the destination is 8+ points from the boat)
+  var AUTO_MIN = 8, AUTO_MS = 500, MAX_CALLS = 6;
+  function sameDest(a, b) { return !!(a && b && a.x === b.x && a.y === b.y); }
+  function scheduleAutoSearch() {
+    clearTimeout(state.autoT); state.autoT = 0;
+    var cur = state.cur, st = $('sug-status'); if (!cur || !cur.target) return;
+    var d = Math.round(Math.hypot(cur.target.x - cur.x, cur.target.y - cur.y));
+    if (d < AUTO_MIN) {
+      if (st) st.textContent = 'O destino ficou a ' + d + (d === 1 ? ' ponto' : ' pontos') + ' do barco: perto demais para procurar outro negócio. Arraste para mais longe (8 pontos ou mais) ou clique em "Pensar em negócios para este destino".';
+      updateSugBtn(); placeDestGo(); return;
+    }
+    if (!activeKey()) { if (st) st.textContent = 'Conecte sua chave da OpenRouter (ícone da chave, no topo) para a IA pensar em negócios para este destino.'; updateSugBtn(); placeDestGo(); return; }
+    if (st) st.textContent = '';
+    state.autoT = setTimeout(function () { state.autoT = 0; if (state.cur === cur && !drag.active && !drag.kbd) suggest(true); }, AUTO_MS);
+    placeDestGo();
+  }
+  function suggest(auto) {   // v5: reasoned search (generator → blind judge → up to 3 rounds), at most 6 model calls
     var cur = state.cur;
-    if (!cur || state.sugBusy) return;
+    if (!cur) return;
+    clearTimeout(state.autoT); state.autoT = 0;
+    if (state.search && state.search.running) { if (auto !== true) return; cancelSearch(); }
     if (!cur.target) { toast('Arraste no gráfico até onde você quer chegar (ou use um atalho).'); return; }
-    if (!activeKey()) { toast('Conecte sua chave da OpenRouter (ícone da chave, no topo).'); return; }
-    stopMic();
-    if (state.tab !== 'rumo') setTab('rumo');
+    if (!activeKey()) { toast('Conecte sua chave da OpenRouter (ícone da chave, no topo).'); $('sug-status').textContent = 'Conecte sua chave da OpenRouter (ícone da chave, no topo) para a IA pensar em negócios para este destino.'; return; }
+    stopMic(); if (state.sim) simClose();
     var t = { x: cur.target.x, y: cur.target.y };
     var comp = ($('in-comp').value || '').trim(), hist = ($('in-hist').value || '').trim(), obj = ($('in-obj').value || '').trim();
+    var sig = { aborted: false, ctrls: [], abort: function () { sig.aborted = true; sig.ctrls.forEach(function (c) { try { c.abort(); } catch (e) {} }); } };
+    var S = state.search = { running: true, stop: false, t0: Date.now(), end: 0, target: t, cands: [], profile: null, calls: 0, rounds: 0, phase: 'run', nextId: 1, shown: {}, sig: sig, auto: auto === true,
+      steps: [{ text: 'Entendendo o seu negócio e o que você já sabe fazer', st: 'run' }, { text: 'Pensando em 12 negócios que a mesma pessoa abriria', st: 'wait' }, { text: 'Medindo cada um com a mesma conta (o juiz não sabe onde você quer chegar)', st: 'wait' }] };
+    cur.sugs = []; cur.sugTarget = null; cur.searchProfile = null; cur.searchMeta = null; state.seenKey = '';
     state.sugBusy = true;
-    var btn = $('sug-btn'); btn.disabled = true; btn.classList.add('is-busy');
-    placeDestGo();
-    $('sug-status').textContent = 'Procurando negócios parecidos que cheguem perto de ' + QUADS[quad(t.x, t.y)].nome + '…';
-    callJSON(sugMessages(cur, t, comp, hist, obj), 7000).then(function (j) {
-      var list = normSugs(j, cur, t);
-      if (!list.length) throw new Error('O modelo não devolveu sugestões válidas.');
-      cur.sugs = list; cur.sugTarget = t;
-      lsSet(CURRENT_SLOT, cur);
-      renderChart(); renderRumo();
-      if (sugsInView()) markSugsSeen();
-      var perto = list.filter(function (s) { return s.perto; }).length;
-      $('sug-status').textContent = perto + ' de ' + list.length + ' chegam perto do destino (até ' + NEAR + ' pontos), pela régua da ferramenta. Arraste o destino e peça de novo quando quiser.';
+    $('sug-status').textContent = '';
+    if (state.tab !== 'rumo') setTab('rumo'); else { renderChart(); renderRumo(); }
+    updateSugBtn(); searchUI();
+    S.timer = setInterval(searchTick, 1000);
+    setTimeout(function () { if (state.search === S) ensureVisible($('search-line')); }, 60);
+    var alive = function () { return state.search === S && !S.stop; };
+    var step = function (i, st, text) { if (!S.steps[i]) S.steps[i] = { text: text || '', st: st }; else { S.steps[i].st = st; if (text) S.steps[i].text = text; } searchUI(); };
+    var nearCount = function () { return pick5(S.cands).filter(function (c) { return c.perto; }).length; };
+    var measure = function (list, idx, retry) {
+      step(idx, 'run');
+      S.calls++;
+      return callJSON(judgeMessages(S.profile, list), 12000, sig).then(function (j) {
+        if (!alive()) return;
+        applyJudge(list, j, t);
+        var got = list.filter(function (c) { return c.measured; }).length;
+        if (!got && !retry && S.calls < MAX_CALLS) return measure(list, idx, true);   // nothing came back measured: ask the judge once more
+        step(idx, 'done', got < list.length ? S.steps[idx].text + ' · ' + got + ' de ' + list.length + ' medidos' : null);
+        chartRefresh(); searchUI();
+      });
+    };
+    var round = function (n) {
+      if (S.calls + 2 > MAX_CALLS) return Promise.resolve();
+      var far = S.cands.filter(function (c) { return c.measured && !c.perto && !c.varied; }).sort(function (a, b) { return a.dist - b.dist; }).slice(0, 8);
+      if (!far.length) return Promise.resolve();
+      far.forEach(function (c) { c.varied = true; });
+      var idx = S.steps.length;
+      step(idx, 'run', 'Rodada ' + n + ': ajustando os ' + far.length + ' que ficaram longe');
+      S.rounds = n; S.calls++;
+      return callJSON(genMessagesRound(cur, t, S.profile, far), 6000, sig).then(function (j) {
+        if (!alive()) return;
+        var vs = normCands(j && j.variacoes, n, S.nextId); S.nextId += vs.length;
+        vs.forEach(function (v) { if (v.origem != null && !far.some(function (c) { return c.id === v.origem; })) v.origem = null; });
+        step(idx, 'done', 'Rodada ' + n + ': ' + vs.length + (vs.length === 1 ? ' variação' : ' variações') + ' dos ' + far.length + ' que ficaram longe');
+        if (!vs.length) return;
+        S.cands = S.cands.concat(vs);
+        var mi = S.steps.length;
+        step(mi, 'run', 'Medindo as variações da rodada ' + n + ' (o juiz continua sem saber o destino)');
+        return measure(vs, mi);
+      });
+    };
+    S.calls++;
+    callJSON(genMessages1(cur, t, comp, hist, obj), 6000, sig).then(function (j) {
+      if (!alive()) return;
+      S.rounds = 1;
+      S.profile = normProfile(j && j.perfil);
+      var cs = normCands(j && j.candidatos, 1, S.nextId); S.nextId += cs.length;
+      if (!cs.length) throw new Error('A IA não devolveu negócios para medir.');
+      S.cands = cs;
+      step(0, 'done'); step(1, 'done', 'Pensando em ' + cs.length + ' negócios que a mesma pessoa abriria');
+      return measure(cs, 2).then(function () {
+        if (!alive() || nearCount() >= 5) return;
+        return round(2).then(function () { if (!alive() || nearCount() >= 3) return; return round(3); });
+      });
     }).catch(function (e) {
-      var msg = e && e.message === 'NO_KEY' ? 'Conecte sua chave da OpenRouter.' : (e && e.message) || 'Erro ao sugerir.';
-      $('sug-status').textContent = 'Não deu para sugerir agora: ' + msg + ' Tente de novo.';
-    }).then(function () { state.sugBusy = false; btn.classList.remove('is-busy'); btn.disabled = !state.cur || !state.cur.target; placeDestGo(); });
+      if (state.search !== S || S.stop) return;   // replaced by a new destination, or stopped by the person: no error
+      S.error = e && e.message === 'NO_KEY' ? 'Conecte sua chave da OpenRouter.' : (e && e.message) || 'erro desconhecido';
+    }).then(function () { if (state.search === S) finishSearch(); });
+  }
+  function searchTick() { var S = state.search; if (!S || !S.running) return; searchUI(true); }
+  function chartRefresh() { if (drag.active || drag.kbd) { state.renderLater = true; return; } renderChart(); }
+  function ensureVisible(el) {
+    if (!el || el.hidden) return;
+    var r = el.getBoundingClientRect(), hb = headerBottom(), vh = window.innerHeight, dy = 0;
+    if (r.bottom > vh - 12) dy = r.bottom - vh + 12; else if (r.top < hb + 8) dy = r.top - hb - 8;
+    if (dy) window.scrollBy({ top: dy, behavior: reducedMotion() ? 'auto' : 'smooth' });
+  }
+  function finishSearch() {
+    var S = state.search, cur = state.cur; if (!S || !cur || !S.running) return;
+    clearInterval(S.timer); S.running = false; S.end = Date.now();
+    state.sugBusy = false;
+    var final = pick5(S.cands);
+    var secs = Math.round((S.end - S.t0) / 1000);
+    var measured = S.cands.filter(function (c) { return c.measured; }).length;
+    if (!final.length) {
+      S.phase = 'done';
+      $('sug-status').textContent = S.error ? 'Não deu para terminar a busca: ' + S.error + ' Clique em "Pensar de novo".' : 'A busca parou antes de medir algum negócio. Clique em "Pensar de novo".';
+      S.steps.push({ text: S.error ? 'Parou sem resultado: ' + S.error : 'Parou antes de medir algum negócio', st: 'done' });
+      updateSugBtn(); chartRefresh(); searchUI(); placeDestGo(); return;
+    }
+    final.forEach(function (c) { c.chosen = true; });
+    cur.sugs = final.map(function (c) {
+      return { nome: c.nome, descricao: c.descricao, aproveita: c.aproveita, porque: c.aproveita, movimento: c.movimento, muda: c.muda || c.direcao, mudaNotas: changesList(cur, c.rubric),
+        rubric: c.rubric, legal: c.legal, legalAdj: c.legalAdj, x: c.x, y: c.y, q: c.q, anchor: c.anchor, dx: c.x - cur.x, dy: c.y - cur.y, dist: c.dist, perto: c.perto, round: c.round, fonte: 'hormozi_video' };
+    });
+    cur.sugTarget = { x: S.target.x, y: S.target.y };
+    cur.searchProfile = S.profile;
+    var perto = cur.sugs.filter(function (s) { return s.perto; }).length;
+    cur.searchMeta = { rounds: S.rounds, seconds: secs, calls: S.calls, measured: measured, perto: perto, model: (window.ApiKeyManager && ApiKeyManager.getModel) ? ApiKeyManager.getModel() : '', partial: !!(S.error || S.stop) };
+    lsSet(CURRENT_SLOT, cur);
+    S.steps.push({ text: 'Pronto: ' + perto + ' de ' + cur.sugs.length + ' chegam perto' + (S.error ? ' (resultado parcial: ' + S.error + ')' : (S.stop ? ' (você parou a busca)' : '')), st: 'done' });
+    $('sug-status').textContent = perto + ' de ' + cur.sugs.length + ' chegam perto do destino (até ' + NEAR + ' pontos), pela conta da ferramenta · ' + S.rounds + (S.rounds === 1 ? ' rodada' : ' rodadas') + ' · ' + secs + ' s · ' + measured + ' negócios medidos.';
+    S.phase = 'fade'; updateSugBtn(); chartRefresh(); renderSugs(); searchUI(); placeDestGo();
+    setTimeout(function () { if (state.search === S) { S.phase = 'done'; S.cands = S.cands.filter(function (c) { return c.chosen; }); chartRefresh(); } }, reducedMotion() ? 0 : 950);
+  }
+  function stopSearch() {
+    var S = state.search; if (!S || !S.running || S.stop) return;
+    S.stop = true; S.sig.abort();   // the call in flight is dropped; what was already measured stays
+  }
+  function cancelSearch() {   // a new destination: the running search answered another question
+    var S = state.search; if (!S) return;
+    if (S.running) { S.stop = true; S.sig.abort(); clearInterval(S.timer); }
+    state.search = null; state.sugBusy = false;
+    updateSugBtn(); searchUI();
+  }
+  function clearSearch() {
+    var cur = state.cur; if (!cur) return;
+    if (state.search && state.search.running) cancelSearch();
+    state.search = null; cur.sugs = []; cur.sugTarget = null; cur.searchProfile = null; cur.searchMeta = null;
+    lsSet(CURRENT_SLOT, cur); $('sug-status').textContent = 'Busca limpa. Arraste o barco para outro destino ou clique em "Pensar em negócios para este destino".';
+    renderChart(); renderRumo(); searchUI();
+  }
+  function updateSugBtn() {
+    var b = $('sug-btn'), cur = state.cur; if (!b) return;
+    var S = state.search, running = !!(S && S.running);
+    var ran = !!(cur && cur.target && ((S && sameDest(S.target, cur.target)) || sugsForTarget(cur)));
+    b.querySelector('.gen-text').textContent = ran ? 'Pensar de novo' : 'Pensar em negócios para este destino';
+    b.querySelector('.gen-loading').textContent = 'Pensando…';
+    b.disabled = !cur || !cur.target || running;
+    b.classList.toggle('is-busy', running);
+  }
+  function searchUI(tickOnly) {
+    var S = state.search, cur = state.cur, box = $('search-panel'), line = $('search-line'); if (!box) return;
+    var prof = (S && S.profile) || (cur && sugsForTarget(cur) && cur.searchProfile) || null;
+    var meta = cur && sugsForTarget(cur) ? cur.searchMeta : null;
+    var secs = S ? Math.round(((S.end || Date.now()) - S.t0) / 1000) : (meta ? meta.seconds : 0);
+    var running = !!(S && S.running);
+    var title = running ? 'Pensando… ' + secs + ' s' : 'Como a busca pensou' + (secs ? ' · ' + secs + ' s' : '');
+    var last = running ? S.steps.filter(function (st) { return st.st === 'run'; }).pop() : null;
+    var lineTxt = running ? 'Pensando… ' + (last ? last.text : '') + ' · ' + secs + ' s' : (meta ? 'Pronto: ' + meta.perto + ' de ' + (cur.sugs || []).length + ' chegam perto · ' + meta.rounds + (meta.rounds === 1 ? ' rodada' : ' rodadas') + ' · ' + meta.seconds + ' s' : (S && S.steps.length ? S.steps[S.steps.length - 1].text : ''));
+    if (line) {
+      line.hidden = !lineTxt || $('result').hidden;
+      $('search-line-text').textContent = lineTxt;
+      line.classList.toggle('running', running);
+      $('search-line-stop').hidden = !running || S.stop;
+      $('search-line-see').hidden = running || !(cur && sugsForTarget(cur));
+    }
+    if (!S && !prof && !meta) { box.hidden = true; return; }
+    box.hidden = false;
+    $('search-title').textContent = title;
+    $('search-stop').hidden = !running || S.stop;
+    if (tickOnly) return;
+    var key = S ? S.steps.map(function (st) { return st.st + ':' + st.text; }).join('|') : 'meta';
+    if (box.getAttribute('data-k') !== key) {
+      box.setAttribute('data-k', key);
+      $('search-steps').innerHTML = S ? S.steps.map(function (st) { return '<li class="st-' + st.st + '">' + esc(st.text) + '</li>'; }).join('')
+        : (meta ? '<li class="st-done">' + esc(meta.measured + ' negócios medidos em ' + meta.rounds + (meta.rounds === 1 ? ' rodada' : ' rodadas') + ' · ' + meta.perto + ' de ' + (cur.sugs || []).length + ' chegam perto') + '</li>' : '');
+    }
+    var pb = $('search-profile');
+    if (prof) {
+      pb.hidden = false;
+      $('search-profile-text').innerHTML = '<b>O que a IA entendeu que você já sabe fazer:</b> ' + esc(prof.competencias.join('; ') || '—') + '.' +
+        (prof.ativos.length ? '<br><b>O que você já tem:</b> ' + esc(prof.ativos.join('; ')) + '.' : '') + (prof.requisitos.length ? '<br><b>O que você já cumpre:</b> ' + esc(prof.requisitos.join('; ')) + '.' : '');
+      $('search-fix').hidden = running;
+    } else pb.hidden = true;
+    $('search-clear').hidden = running || !(cur && sugsForTarget(cur));
+  }
+  // "Corrigir o que a IA entendeu": the profile goes into the fields, ready to edit, and the next search uses them
+  function fixProfile() {
+    var cur = state.cur, prof = (state.search && state.search.profile) || (cur && cur.searchProfile); if (!prof) return;
+    var c = $('in-comp'), h = $('in-hist');
+    if (c && !c.value.trim() && prof.competencias.length) c.value = prof.competencias.join('; ').slice(0, 600);
+    if (h && !h.value.trim() && (prof.ativos.length || prof.requisitos.length)) h.value = [prof.ativos.length ? 'Já tenho: ' + prof.ativos.join('; ') : '', prof.requisitos.length ? 'Já cumpro: ' + prof.requisitos.join('; ') : ''].filter(Boolean).join('. ').slice(0, 600);
+    var hb = headerBottom();
+    window.scrollBy({ top: c.getBoundingClientRect().top - hb - 70, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    try { c.focus({ preventScroll: true }); } catch (e) { c.focus(); }
+    toast('Corrija o que a IA entendeu e clique em "Pensar de novo".');
   }
   function onSugClick(e) {
-    var ev = e.target.closest('.sug-eval'), sv = e.target.closest('.sug-save');
+    var ev = e.target.closest('.sug-eval'), sv = e.target.closest('.sug-save'), sm = e.target.closest('.sug-sim');
     var cur = state.cur; if (!cur || !cur.sugs) return;
+    if (sm) { var s3 = cur.sugs[parseInt(sm.getAttribute('data-i'), 10)]; if (s3 && s3.rubric) simOpen({ rub: s3.rubric, legal: s3.legal, label: 'sugestão ' + (parseInt(sm.getAttribute('data-i'), 10) + 1) + ': ' + s3.nome }); return; }
     if (ev) {
-      var s = cur.sugs[parseInt(ev.getAttribute('data-i'), 10)]; if (!s) return;
-      evaluateIdea(s.nome + ': ' + s.descricao);
+      var ei = parseInt(ev.getAttribute('data-i'), 10), s = cur.sugs[ei]; if (!s) return;
+      state.travel = { from: { x: cur.x, y: cur.y, anchor: cur.anchor }, nome: s.nome, i: ei, est: { x: s.x, y: s.y }, origem: cur.titulo, target: cur.target ? { x: cur.target.x, y: cur.target.y } : null };
+      evaluateIdea(s.nome + ': ' + s.descricao, true);
     } else if (sv) {
       var s2 = cur.sugs[parseInt(sv.getAttribute('data-i'), 10)]; if (!s2) return;
       pushHistory(normalizeEntry({
@@ -1799,11 +2206,13 @@ const App = (function () {
   }
   function loadEntry(it) {
     if (state.sim) simClose();
+    clearTimeout(state.autoT); state.autoT = 0;
+    if (state.search) cancelSearch();
     state.cur = normalizeEntry(it);
     $('in-ideia').value = it.ideia || ''; $('in-contexto').value = it.contexto || '';
     setGoal(it.goal || 'renda'); updateCount();
     lsSet(CURRENT_SLOT, state.cur);
-    renderReport(); showState('done'); setTab('diag');
+    renderReport(); showState('done'); setTab('diag'); updateGenBtn();
   }
 
   // ── Exports ───────────────────────────────────────────────────────────────
@@ -1885,7 +2294,18 @@ const App = (function () {
       L1.push('RISCOS'); c.report.riscos.forEach(function (r) { L1.push('- ' + r.texto + ' [' + sourceById(r.fonte).short + ']'); }); L1.push('');
     }
     if (c.pivots && c.pivots.length) { L1.push('PIVÔS'); c.pivots.forEach(function (p, i) { L1.push((i + 1) + ') ' + p.nome + ': ' + p.descricao + ' → ' + QUADS[p.q].nome + (p.anchor ? ' ⚓' : '') + ' (' + deltaText(c, p) + ')'); }); L1.push(''); }
-    if (c.sugs && c.sugs.length) { var t = c.sugTarget || c.target; L1.push('NEGÓCIOS PARECIDOS — destino ' + QUADS[quad(t.x, t.y)].nome + ' (dificuldade ' + t.x + ', potencial ' + t.y + ')'); c.sugs.forEach(function (s, i) { L1.push((i + 1) + ') ' + s.nome + ' — ' + (s.perto ? 'chega perto' : 'fica longe') + ' (a ' + s.dist + ' pts)' + (s.anchor ? ' ⚓' : '') + ': ' + s.descricao); }); L1.push(''); }
+    if (sugsForTarget(c)) {
+      var t = c.sugTarget, m = c.searchMeta || {}, pf = c.searchProfile;
+      L1.push('PARA ONDE IR — busca até o destino ' + QUADS[quad(t.x, t.y)].nome + ' (dificuldade ' + t.x + ', potencial ' + t.y + ')' + (m.rounds ? ' · ' + m.measured + ' negócios medidos em ' + m.rounds + (m.rounds === 1 ? ' rodada' : ' rodadas') + ', ' + m.seconds + ' s' : ''));
+      if (pf) { L1.push('O que a IA entendeu que você já sabe fazer: ' + (pf.competencias.join('; ') || '—') + '.'); if (pf.ativos.length) L1.push('O que você já tem: ' + pf.ativos.join('; ') + '.'); }
+      c.sugs.forEach(function (s, i) {
+        L1.push((i + 1) + ') ' + s.nome + ' — ' + (s.perto ? 'chega perto' : 'fica longe') + ' (a ' + ptsWord(s.dist) + ' do destino): ' + s.descricao);
+        if (s.aproveita) L1.push('   Aproveita: ' + s.aproveita);
+        if (s.muda || (s.mudaNotas && s.mudaNotas.length)) L1.push('   O que muda: ' + [s.muda, s.mudaNotas && s.mudaNotas.length ? changesText(s.mudaNotas) : ''].filter(Boolean).join(' — '));
+        L1.push('   Posição: dificuldade ' + s.x + ' · potencial ' + s.y + ' → ' + QUADS[s.q].nome + (s.anchor ? ' · ⚓ depende de você' : ''));
+      });
+      L1.push('');
+    }
     L1.push('A CONTA (nota × peso = pontos; a soma é a posição)'); RUBRIC.forEach(function (r) { L1.push('- ' + r.label + ': nota ' + c.rubric[r.k].nota + '/10 → ' + fmt1(critPts(r, c.rubric[r.k].nota)) + ' de ' + Math.round(r.w * 100) + (r.inverse ? ' (conta contra)' : '') + (c.rubric[r.k].porque ? ' — ' + c.rubric[r.k].porque : '')); }); L1.push('- Ajuste do "parece legal": nota ' + c.legal.nota + '/10 → ' + fmt1(c.legalAdj));
     L1.push('', 'Base: Índice do Idiota, de Alex Hormozi (vídeo, 2026), adaptado em 4 quadrantes + âncora. Ferramenta educacional — Comunidade Maestros da IA.');
     return L1.join('\n');
@@ -1906,6 +2326,7 @@ const App = (function () {
     state.goal = GOALS[g] ? g : 'renda';
     document.querySelectorAll('#goal-chips .chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-val') === state.goal ? 'true' : 'false'); });
     if (state.objAuto) { var el = $('in-obj'); if (el) el.value = GOALS[state.goal].obj; }
+    updateGenBtn();
   }
   var IDEA_EXAMPLES = [
     { i: 'Quero abrir uma academia de bairro com aulas em grupo e personal trainers, mensalidade de R$ 129, em Belo Horizonte.', c: 'sou educador físico, tenho R$ 150 mil', g: 'renda' },
@@ -1920,9 +2341,11 @@ const App = (function () {
   }
   function clearForm() {
     stopMic();
+    clearTimeout(state.autoT); state.autoT = 0;
+    if (state.search) cancelSearch();
     $('in-ideia').value = ''; $('in-contexto').value = ''; updateCount();
     state.cur = null; try { localStorage.removeItem(CURRENT_SLOT); } catch (e) {}
-    showState('done'); renderChart();
+    showState('done'); renderChart(); updateGenBtn(); searchUI();
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -1932,7 +2355,8 @@ const App = (function () {
     if (window.ApiKeyManager && ApiKeyManager.renderModelPicker) ApiKeyManager.renderModelPicker('model-select');
     renderOrigins();
     setupMics();
-    $('in-ideia').addEventListener('input', updateCount);
+    $('in-ideia').addEventListener('input', function () { updateCount(); updateGenBtn(); });
+    $('in-contexto').addEventListener('input', updateGenBtn);
     $('in-obj').addEventListener('input', function () { state.objAuto = false; });
     document.querySelectorAll('#goal-chips .chip').forEach(function (c) { c.addEventListener('click', function () { setGoal(c.getAttribute('data-val')); }); });
     $('generate-btn').addEventListener('click', generate);
@@ -1943,7 +2367,18 @@ const App = (function () {
     $('copy-btn').addEventListener('click', copyText);
     $('print-btn').addEventListener('click', printReport);
     $('png-btn').addEventListener('click', exportPNG);
-    $('sug-btn').addEventListener('click', suggest);
+    $('sug-btn').addEventListener('click', function () { suggest(); });
+    $('search-stop').addEventListener('click', stopSearch);
+    $('search-line-stop').addEventListener('click', stopSearch);
+    $('search-line-see').addEventListener('click', goToCards);
+    $('search-clear').addEventListener('click', clearSearch);
+    $('search-fix').addEventListener('click', fixProfile);
+    // a card lit by the pointer or the keyboard lights its marker on the chart (and the marker lights its card)
+    var sl = $('sug-list');
+    sl.addEventListener('mouseover', function (e) { var c = e.target.closest && e.target.closest('.sug-card'); if (c) hlSug(c.getAttribute('data-i'), true); });
+    sl.addEventListener('mouseout', function (e) { var c = e.target.closest && e.target.closest('.sug-card'); if (c && !(e.relatedTarget && c.contains(e.relatedTarget))) hlSug(c.getAttribute('data-i'), false); });
+    sl.addEventListener('focusin', function (e) { var c = e.target.closest && e.target.closest('.sug-card'); if (c) hlSug(c.getAttribute('data-i'), true); });
+    sl.addEventListener('focusout', function (e) { var c = e.target.closest && e.target.closest('.sug-card'); if (c && !(e.relatedTarget && c.contains(e.relatedTarget))) hlSug(c.getAttribute('data-i'), false); });
     $('dest-go').addEventListener('click', onDestGo);
     $('calc-btn').addEventListener('click', function () { playCalc(true); });
     $('sim-rows').addEventListener('input', onSimInput);
@@ -1980,6 +2415,8 @@ const App = (function () {
     host.addEventListener('pointercancel', onDragCancel);
     host.addEventListener('pointerleave', onChartLeave);
     host.addEventListener('click', onChartClick);
+    host.addEventListener('pointerover', function (e) { var m = e.pointerType === 'mouse' && e.target.closest && e.target.closest('.mk-sug'); if (m && !drag.active) hlSug(m.getAttribute('data-sug'), true); });
+    host.addEventListener('pointerout', function (e) { var m = e.pointerType === 'mouse' && e.target.closest && e.target.closest('.mk-sug'); if (m && !(e.relatedTarget && m.contains(e.relatedTarget))) hlSug(m.getAttribute('data-sug'), false); });
     var hd = $('boat-handle');
     hd.addEventListener('pointerdown', onHandleDown);
     hd.addEventListener('pointermove', onDragMove);
@@ -2037,11 +2474,19 @@ const App = (function () {
     else { showState('done'); renderChart(); }
     updateCount();
     prefillObj();
+    updateGenBtn();
   }
   function renderChartButtonsOnly() { renderChart(); }
 
 
-  return { init: init, _calc: { position: position, quad: quad, anchorOf: anchorOf, boundary: boundary, goalFit: goalFit, normRubric: normRubric, normSugs: normSugs, normalizeEntry: normalizeEntry, EXAMPLES: EXAMPLES, SOURCES: SOURCES, geom: geom, buildSVG: buildSVG, layout: layout, calcSteps: calcSteps, critPts: critPts, RUBRIC: RUBRIC, QUADS: QUADS }, _state: function () { return { calcOn: calc.on, sim: state.sim, simCur: state.simCur }; } };
+  return { init: init, _calc: { position: position, quad: quad, anchorOf: anchorOf, boundary: boundary, goalFit: goalFit, normRubric: normRubric, normSugs: normSugs, normalizeEntry: normalizeEntry, EXAMPLES: EXAMPLES, SOURCES: SOURCES, geom: geom, buildSVG: buildSVG, layout: layout, calcSteps: calcSteps, critPts: critPts, RUBRIC: RUBRIC, QUADS: QUADS, judgeMessages: judgeMessages, rubricMessages: rubricMessages, genMessages1: genMessages1, genMessagesRound: genMessagesRound, applyJudge: applyJudge, pick5: pick5, normCands: normCands, normProfile: normProfile, missingText: missingText, changesList: changesList, NEAR: NEAR }, _state: function () {
+    var S = state.search;
+    return { calcOn: calc.on, travel: !!(calc.on && calc.endMove), sim: state.sim, simCur: state.simCur, autoPending: !!state.autoT, net: state.net || 0,
+      search: S ? { running: S.running, stop: S.stop, phase: S.phase, rounds: S.rounds, calls: S.calls, auto: S.auto, error: S.error || '', target: S.target, t0: S.t0, end: S.end,
+        measured: S.cands.filter(function (c) { return c.measured; }).length, near: S.cands.filter(function (c) { return c.measured && c.perto; }).length,
+        cands: S.cands.map(function (c) { return { id: c.id, round: c.round, nome: c.nome, movimento: c.movimento, origem: c.origem, x: c.x, y: c.y, dist: c.dist, perto: c.perto, measured: !!c.measured, aproveita: c.aproveita }; }),
+        profile: S.profile, steps: S.steps.map(function (st) { return st.st + ': ' + st.text; }) } : null };
+  } };
 })();
 
 // ── App init triggers: event + DOMContentLoaded + MutationObserver (COR-008/044) ──

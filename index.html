@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veículo IA — Maestros da IA</title>
   <meta name="description" content="Escreva ou dite sua ideia de negócio e veja onde ela cai num gráfico de 0 a 100: dificuldade × potencial financeiro. Veja a conta que gerou o ponto, simule notas e arraste até onde quer chegar para receber negócios que levam até lá.">
-  <link rel="stylesheet" href="styles.css?v=20261112l">
+  <link rel="stylesheet" href="styles.css?v=20261112m">
   <link rel="preconnect" href="https://gate.maestrosdaia.com">
   <link rel="preload" href="https://gate.maestrosdaia.com/v1/membership-gate.js" as="script">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4efe2'/%3E%3Crect x='2' y='2' width='28' height='28' fill='none' stroke='%2314284a' stroke-width='2'/%3E%3Cpath d='M16 5l3 11-3 11-3-11z' fill='%2314284a'/%3E%3Cpath d='M5 16l11-3 11 3-11 3z' fill='%23b5246b'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4efe2'/%3E%3C/svg%3E">
@@ -160,6 +160,7 @@
               <span class="gen-text">Posicionar no gráfico</span>
               <span class="gen-loading">Calculando…</span>
             </button>
+            <p id="gen-hint" class="gen-hint" hidden>Para achar outro negócio, arraste o barco até onde você quer chegar.</p>
             <div class="row-links">
               <button id="example-btn" type="button" class="btn-link">Usar um exemplo</button>
               <button id="clear-btn" type="button" class="btn-link">Limpar</button>
@@ -172,16 +173,17 @@
           <div id="stage-head" class="stage-head" hidden><h2 class="tb-title" id="tb-title"></h2></div>
 
           <div class="chart-card neat" id="chart-card"><div class="neat-inner">
-            <div class="chart-wrap" id="chart-wrap" tabindex="0" role="group" aria-label="Gráfico interativo. Depois da avaliação, use as setas para mover o destino, Enter para sugerir negócios e Esc para cancelar." aria-describedby="dest-live">
+            <div class="chart-wrap" id="chart-wrap" tabindex="0" role="group" aria-label="Gráfico interativo. Depois da avaliação, use as setas para mover o destino e Enter para soltar: a IA começa a pensar em negócios para chegar lá. Esc cancela." aria-describedby="dest-live">
               <div id="chart-host"></div>
               <div id="info-btns"></div>
               <div id="boat-handle" class="boat-handle" hidden aria-hidden="true" title="Arraste o barco"></div>
-              <button type="button" id="dest-go" class="dest-go" hidden>Sugerir negócios para chegar aqui</button>
+              <button type="button" id="dest-go" class="dest-go" hidden>Pensar em negócios para este destino</button>
               <div id="chart-pop" class="chart-pop" role="dialog" aria-label="Exemplos de negócios" aria-hidden="true"></div>
               <div id="zone-card" class="zone-card" role="dialog" aria-label="O que significa" hidden></div>
               <p id="dest-live" class="sr-only" aria-live="polite"></p>
             </div>
             <div class="chart-foot">
+              <div id="search-line" class="search-line" hidden><span class="sl-dot" aria-hidden="true"></span><span id="search-line-text" class="sl-text"></span><button type="button" id="search-line-stop" class="sl-stop" hidden>Parar</button><button type="button" id="search-line-see" class="sl-see" hidden>Ver os cartões ↓</button></div>
               <div class="chart-read-row"><p id="chart-reading" class="chart-reading" aria-live="polite"></p><button type="button" id="calc-btn" class="btn-link calc-btn" hidden>▶ Ver o cálculo</button></div>
               <p id="chart-hint" class="chart-hint"></p>
               <span class="anchor-key"><span class="anc-ico" aria-hidden="true">⚓</span> Âncora = depende de você <button type="button" class="zinfo zinfo-inline" data-q="anchor" aria-expanded="false" aria-controls="zone-card" aria-label="O que é a âncora?">i</button></span>
@@ -222,13 +224,26 @@
               <button type="button" role="tab" id="tab-export" data-tab="export" aria-controls="panel-export" aria-selected="false" tabindex="-1">Exportar</button>
             </div>
 
-            <article id="panel-diag" class="report neat" role="tabpanel" aria-labelledby="tab-diag"><div class="neat-inner" id="report-body"></div></article>
+            <article id="panel-diag" class="report neat" role="tabpanel" aria-labelledby="tab-diag"><div class="neat-inner" id="report-body"></div><div class="neat-inner print-only search-print" id="search-print"></div></article>
 
             <section id="panel-rumo" class="report neat" role="tabpanel" aria-labelledby="tab-rumo" hidden><div class="neat-inner">
               <h3>Para onde você quer ir?</h3>
               <p id="dest-summary" class="dest-summary"></p>
               <div id="dir-buttons" class="dir-buttons" role="group" aria-label="Atalhos"></div>
 
+              <section id="search-panel" class="search-panel" hidden aria-labelledby="search-title">
+                <div class="search-head"><h4 id="search-title">Pensando…</h4><button type="button" id="search-stop" class="btn-secondary search-stop" hidden>Parar e ver o que já achou</button></div>
+                <ol id="search-steps" class="search-steps" aria-live="polite"></ol>
+                <div id="search-profile" class="search-profile" hidden>
+                  <p id="search-profile-text"></p>
+                  <button type="button" id="search-fix" class="btn-link">Corrigir o que a IA entendeu</button>
+                </div>
+                <button type="button" id="search-clear" class="btn-link search-clear" hidden>Limpar busca</button>
+              </section>
+              <p id="sug-status" class="sug-status" aria-live="polite"></p>
+              <div id="sug-list" class="sug-list"></div>
+              <h4 class="refine-title" id="refine-title">Afinar a busca <span class="hint">(opcional)</span></h4>
+              <p class="hint refine-lead">A IA infere da sua ideia o que você sabe fazer. Se ela errou, conte aqui e clique em "Pensar de novo".</p>
               <div class="field">
                 <div class="field-head">
                   <label for="in-comp">Competências <span class="hint">(opcional)</span></label>
@@ -253,10 +268,7 @@
                 <textarea id="in-obj" class="short" maxlength="600"></textarea>
                 <span id="st-obj" class="mic-status" aria-live="polite"></span>
               </div>
-
-              <button id="sug-btn" type="button" class="btn-primary sug-btn"><span class="gen-text">Sugerir negócios para chegar aqui</span><span class="gen-loading">Procurando…</span></button>
-              <p id="sug-status" class="sug-status" aria-live="polite"></p>
-              <div id="sug-list" class="sug-list"></div>
+              <button id="sug-btn" type="button" class="btn-primary sug-btn"><span class="gen-text">Pensar em negócios para este destino</span><span class="gen-loading">Pensando…</span></button>
             </div></section>
 
             <section id="panel-export" class="report neat" role="tabpanel" aria-labelledby="tab-export" hidden><div class="neat-inner">
@@ -329,12 +341,12 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="config.js?v=20261112l"></script>
-  <script src="kill-switch.js?v=20261112l"></script>
-  <script src="rate-limiter.js?v=20261112l"></script>
+  <script src="config.js?v=20261112m"></script>
+  <script src="kill-switch.js?v=20261112m"></script>
+  <script src="rate-limiter.js?v=20261112m"></script>
   <script src="https://gate.maestrosdaia.com/v1/membership-gate.js"></script>
-  <script src="api-key-manager.js?v=20261112l"></script>
-  <script src="feedback-widget.js?v=20261112l"></script>
-  <script src="app.js?v=20261112l"></script>
+  <script src="api-key-manager.js?v=20261112m"></script>
+  <script src="feedback-widget.js?v=20261112m"></script>
+  <script src="app.js?v=20261112m"></script>
 </body>
 </html>
