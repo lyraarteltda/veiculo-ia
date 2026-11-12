@@ -355,8 +355,9 @@ const App = (function () {
       s.push('<line x1="' + xv + '" y1="' + g.B + '" x2="' + xv + '" y2="' + (g.B + 6) + '" stroke="#14284a" stroke-width="1.2"/><line x1="' + (g.L - 6) + '" y1="' + yv + '" x2="' + g.L + '" y2="' + yv + '" stroke="#14284a" stroke-width="1.2"/>');
       var hideX = cur && Math.abs(xv - px(cur.x)) < (String(cur.x).length * cw + 16) / 2 + lw / 2 + 4;
       var hideY = cur && Math.abs(yv - py(cur.y)) < 13 + fzN * 0.45 + 3;
-      if (!hideX) s.push('<text class="tk tkx" x="' + xv + '" y="' + (g.B + 29) + '" text-anchor="middle">' + v + '</text>');
-      if (!hideY) s.push('<text class="tk tky" x="' + (g.L - 12) + '" y="' + (yv + fzN * 0.35) + '" text-anchor="end">' + v + '</text>');
+      // a label under the boat's badge is hidden (attribute, so the PNG keeps it hidden) and comes back while the calculation runs
+      s.push('<text class="tk tkx' + (hideX ? ' tk-near" visibility="hidden' : '') + '" x="' + xv + '" y="' + (g.B + 29) + '" text-anchor="middle">' + v + '</text>');
+      s.push('<text class="tk tky' + (hideY ? ' tk-near" visibility="hidden' : '') + '" x="' + (g.L - 12) + '" y="' + (yv + fzN * 0.35) + '" text-anchor="end">' + v + '</text>');
     });
     s.push('</g>');
     if (cur) s.push(projSVG(g, cur.x, cur.y));
@@ -575,7 +576,7 @@ const App = (function () {
       buoy.innerHTML = '<circle class="buoy-ring" r="' + g.r.buoy + '"/><circle class="buoy-core" r="5"/>';
       d.appendChild(buoy);
       var ro = document.createElementNS(SVGNS, 'g'); ro.setAttribute('class', 'readout'); ro.setAttribute('visibility', 'hidden');
-      ro.innerHTML = '<rect rx="6"/><text class="ro1" font-family="Georgia,serif" font-weight="700" font-size="' + g.fz.ro + '"></text><text class="ro2" font-family="Georgia,serif" font-style="italic" font-size="' + g.fz.ro + '"></text>';
+      ro.innerHTML = '<rect rx="6"/><text class="ro1" font-family="Georgia,serif" font-weight="700" font-size="' + g.fz.ro + '"></text><text class="ro2" font-family="Georgia,serif" font-style="italic" font-size="' + g.fz.ro + '"></text><text class="ro3" font-family="Georgia,serif" font-style="italic" font-size="' + g.fz.ro + '"></text>';
       d.appendChild(ro);
     }
     return d;
@@ -592,14 +593,15 @@ const App = (function () {
     route.setAttribute('visibility', show ? 'visible' : 'hidden');
     buoy.setAttribute('transform', 'translate(' + tx + ' ' + ty + ')');
     if (!live) { ro.setAttribute('visibility', 'hidden'); return; }
-    var t1 = ro.querySelector('.ro1'), t2 = ro.querySelector('.ro2'), rect = ro.querySelector('rect');
+    var t1 = ro.querySelector('.ro1'), t2 = ro.querySelector('.ro2'), t3 = ro.querySelector('.ro3'), rect = ro.querySelector('rect');
     var tp = { x: Math.round(x), y: Math.round(y) };
-    // absolute position first, then the difference (v4); the compact chart splits the first line
+    // absolute position first, then the difference (v4); the compact chart uses three plain lines
     t1.textContent = g.compact ? 'Destino: ' + QUADS[quad(tp.x, tp.y)].nome : 'Destino: ' + absText(tp);
-    t2.textContent = g.compact ? 'dificuldade ' + tp.x + ' · potencial ' + tp.y + ' · ' + deltaText(cur, tp) : deltaText(cur, tp);
-    if (g.compact) t2.textContent = 'dif. ' + tp.x + ' · pot. ' + tp.y + ' (' + deltaText(cur, tp).replace(' potencial', ' pot.').replace(' dificuldade', ' dif.') + ')';
-    t1.setAttribute('x', 0); t1.setAttribute('y', 0); t2.setAttribute('x', 0); t2.setAttribute('y', g.fz.ro * 1.2);
-    var b1 = bboxOf(t1), b2 = bboxOf(t2), w = Math.max(b1.w, b2.w) + 20, h = g.fz.ro * 2.4 + 14;
+    t2.textContent = g.compact ? 'dificuldade ' + tp.x + ' · potencial ' + tp.y : deltaText(cur, tp);
+    t3.textContent = g.compact ? deltaText(cur, tp) : '';
+    var nl = g.compact ? 3 : 2;
+    [t1, t2, t3].forEach(function (t) { t.setAttribute('x', 0); t.setAttribute('y', 0); });
+    var b1 = bboxOf(t1), b2 = bboxOf(t2), b3 = g.compact ? bboxOf(t3) : { w: 0 }, w = Math.max(b1.w, b2.w, b3.w) + 20, h = g.fz.ro * 1.2 * nl + 14;
     var off = g.r.buoy + 10, spots = [[tx + off, ty - off - h], [tx - off - w, ty - off - h], [tx + off, ty + off], [tx - off - w, ty + off]];
     var pick = spots[0];
     for (var i = 0; i < spots.length; i++) {
@@ -610,6 +612,7 @@ const App = (function () {
     rect.setAttribute('x', rx); rect.setAttribute('y', ry); rect.setAttribute('width', w); rect.setAttribute('height', h);
     t1.setAttribute('x', rx + 10); t1.setAttribute('y', ry + 8 + g.fz.ro * 0.92);
     t2.setAttribute('x', rx + 10); t2.setAttribute('y', ry + 8 + g.fz.ro * 2.12);
+    t3.setAttribute('x', rx + 10); t3.setAttribute('y', ry + 8 + g.fz.ro * 3.32);
     ro.setAttribute('visibility', 'visible');
   }
   function setQHL(svg, q) {

@@ -585,6 +585,7 @@ details.more[open] > summary { margin-bottom: 8px; }
 .calc-btn { font-size: 17px; color: var(--magenta-dark); padding: 0 4px; min-height: 40px; }
 .chart-svg.calc-on .boat, .chart-svg.calc-on .proj, .chart-svg.calc-on .arrows, .chart-svg.calc-on .dots,
 .chart-svg.calc-on .idea-tag, .chart-svg.calc-on .hist, .chart-svg.calc-on .dest, .chart-svg.calc-on .dest * { visibility: hidden !important; }
+.chart-svg.calc-on .tk-near { visibility: visible !important; }
 .calc-seg { stroke: #b5246b; stroke-width: 7; opacity: .2; }
 .calc-seg.alt { opacity: .4; }
 .calc-anchor { animation: anchorDrop .45s ease-out; }
