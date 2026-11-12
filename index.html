@@ -8,8 +8,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veículo IA — Maestros da IA</title>
-  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja em qual dos 5 veículos do Índice do Idiota (Alex Hormozi) ela cai — com carta posicionada, rúbrica pontuada e pivôs para subir na carta.">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja em qual dos 5 veículos do Índice do Idiota ela cai: carta posicionada, rúbrica pontuada, rotas para subir na carta e negócios parecidos que reaproveitam o que você já sabe.">
+  <link rel="stylesheet" href="styles.css?v=20261112b">
   <link rel="preconnect" href="https://gate.maestrosdaia.com">
   <link rel="preload" href="https://gate.maestrosdaia.com/v1/membership-gate.js" as="script">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4efe2'/%3E%3Crect x='2' y='2' width='28' height='28' fill='none' stroke='%2314284a' stroke-width='2'/%3E%3Cpath d='M16 5l3 11-3 11-3-11z' fill='%2314284a'/%3E%3Cpath d='M5 16l11-3 11 3-11 3z' fill='%23b5246b'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4efe2'/%3E%3C/svg%3E">
@@ -117,92 +117,69 @@
 
     <main class="app-main">
       <div class="studio">
-        <!-- BRIEF -->
+        <!-- 1. THE IDEA -->
         <aside class="panel brief-panel neat"><div class="neat-inner">
-          <p class="panel-kicker">Diário de bordo</p>
           <h2 class="panel-title">Sua ideia de negócio</h2>
-          <p class="panel-sub">Escreva ou dite. A IA pontua 14 critérios; a régua da ferramenta calcula a posição na carta.</p>
 
           <div class="field">
-            <label for="in-ideia">O que você quer vender / operar</label>
-            <div class="idea-wrap">
-              <textarea id="in-ideia" maxlength="2500" placeholder="Ex.: Quero abrir uma clínica de estética focada em mulheres acima de 50 anos, com protocolos de rejuvenescimento e plano mensal de manutenção."></textarea>
-              <div class="mic-row">
-                <button type="button" id="mic-btn" class="btn-mic" aria-pressed="false">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>
-                  <span class="mic-label">Ditar</span>
-                </button>
-                <span id="mic-status" class="mic-status" aria-live="polite"></span>
-              </div>
+            <div class="field-head">
+              <label for="in-ideia">O que você quer vender ou operar</label>
+              <button type="button" class="btn-mic" data-target="in-ideia" data-status="st-ideia" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>
+                <span class="mic-label">Ditar</span>
+              </button>
             </div>
-            <div class="counter"><span id="ideia-count">0</span> / 2500</div>
+            <textarea id="in-ideia" maxlength="2500" placeholder="Ex.: clínica de estética para mulheres acima de 50 anos, com plano mensal de manutenção."></textarea>
+            <div class="field-foot"><span id="st-ideia" class="mic-status" aria-live="polite"></span><span class="counter"><span id="ideia-count">0</span>/2500</span></div>
           </div>
 
           <div class="field">
-            <label id="goal-label">Qual é o seu objetivo com esse negócio?</label>
+            <p class="field-label" id="goal-label">Seu objetivo</p>
             <div class="chips" id="goal-chips" role="group" aria-labelledby="goal-label">
-              <button type="button" class="chip" data-val="fluxo" aria-pressed="false">Fluxo de caixa<small>começar a gerar dinheiro</small></button>
-              <button type="button" class="chip" data-val="renda" aria-pressed="true">Renda alta<small>ganhar muito por ano</small></button>
-              <button type="button" class="chip" data-val="empresa" aria-pressed="false">Valor de empresa<small>construir algo vendável</small></button>
-              <button type="button" class="chip" data-val="bilhoes" aria-pressed="false">Bilhões<small>mercado enorme + fosso</small></button>
+              <button type="button" class="chip" data-val="fluxo" aria-pressed="false">Fluxo de caixa</button>
+              <button type="button" class="chip" data-val="renda" aria-pressed="true">Renda alta</button>
+              <button type="button" class="chip" data-val="empresa" aria-pressed="false">Valor de empresa</button>
+              <button type="button" class="chip" data-val="bilhoes" aria-pressed="false">Bilhões</button>
             </div>
           </div>
 
-          <div class="field">
-            <label for="in-contexto">Seu contexto <span class="hint">(opcional — experiência, capital, cidade)</span></label>
-            <input type="text" id="in-contexto" maxlength="400" placeholder="Ex.: sou enfermeira, tenho R$ 80 mil, moro em Campinas">
-          </div>
-
-          <div class="field">
-            <label for="model-select">Modelo de IA</label>
-            <select id="model-select"></select>
-          </div>
+          <details class="more">
+            <summary>Mais opções</summary>
+            <div class="field">
+              <label for="in-contexto">Seu contexto <span class="hint">(experiência, capital, cidade)</span></label>
+              <input type="text" id="in-contexto" maxlength="400" placeholder="Ex.: sou enfermeira, tenho R$ 80 mil, moro em Campinas">
+            </div>
+            <div class="field">
+              <label for="model-select">Modelo de IA</label>
+              <select id="model-select"></select>
+            </div>
+          </details>
 
           <div class="gen-actions">
             <button id="generate-btn" class="btn-primary">
               <span class="gen-text">Posicionar na carta</span>
               <span class="gen-loading">Navegando…</span>
             </button>
-            <div class="row-actions">
-              <button id="example-btn" type="button" class="btn-secondary">Usar exemplo</button>
-              <button id="clear-btn" type="button" class="btn-secondary">Limpar</button>
+            <div class="row-links">
+              <button id="example-btn" type="button" class="btn-link">Usar um exemplo</button>
+              <button id="clear-btn" type="button" class="btn-link">Limpar</button>
             </div>
           </div>
         </div></aside>
 
-        <!-- STAGE -->
-        <section class="stage" aria-live="polite">
-          <div id="stage-toolbar" class="stage-toolbar" hidden>
-            <h2 class="tb-title" id="tb-title">Sua ideia</h2>
-            <div class="tb-actions">
-              <button id="save-btn" class="btn-secondary" type="button">Salvar no histórico</button>
-              <button id="copy-btn" class="btn-secondary" type="button">Copiar texto</button>
-              <button id="print-btn" class="btn-secondary" type="button">Imprimir / PDF</button>
-              <button id="png-btn" class="btn-primary" type="button">Baixar carta (PNG)</button>
-            </div>
-          </div>
+        <!-- 2. THE CHART + RESULT -->
+        <section class="stage">
+          <div id="stage-head" class="stage-head" hidden><h2 class="tb-title" id="tb-title"></h2></div>
 
           <div class="chart-card neat"><div class="neat-inner">
-            <div id="chart-host"></div>
-            <div class="chart-legend">
-              <span class="lg"><span class="lg-boat"></span> sua ideia</span>
-              <span class="lg"><span class="lg-pivot"></span> rota de pivô</span>
-              <span class="lg"><span class="lg-buoy"></span> ideias salvas</span>
-              <span class="lg"><span class="lg-sound">· restaurante</span> exemplos do vídeo</span>
-              <label class="switch-line no-print"><input type="checkbox" id="toggle-history" checked> mostrar histórico na carta</label>
+            <div class="chart-wrap" id="chart-wrap">
+              <div id="chart-host"></div>
+              <div id="chart-pop" class="chart-pop" role="dialog" aria-label="Exemplos de negócios" hidden></div>
             </div>
-            <dl id="fix-strip" class="fix-strip" hidden>
-              <div><dt>Dificuldade</dt><dd id="fx-x">—</dd></div>
-              <div><dt>Dinheiro</dt><dd id="fx-y">—</dd></div>
-              <div><dt>Veículo</dt><dd class="v" id="fx-v">—</dd></div>
-              <div><dt>Objetivo</dt><dd id="fx-g">—</dd></div>
-            </dl>
-          </div></div>
-
-          <div id="empty-state" class="empty-state neat"><div class="neat-inner">
-            <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="#d6e6ec" stroke="#14284a" stroke-width="2"/><path d="M28 74h64l-9 12H37z" fill="#14284a"/><path d="M60 26v46" stroke="#14284a" stroke-width="3"/><path d="M62 30l24 38H62z" fill="#b5246b"/><path d="M58 36L40 68h18z" fill="#fffdf7" stroke="#14284a" stroke-width="2"/><path d="M14 94c10-6 20 6 30 0s20 6 32 0 20 6 30 0" fill="none" stroke="#14284a" stroke-width="2"/></svg>
-            <h3>Em que barco você está entrando?</h3>
-            <p>Descreva a ideia (ou toque em <strong>Ditar</strong> e fale), escolha seu objetivo e clique em <strong>Posicionar na carta</strong>. Você recebe a posição no Índice do Idiota, a nota de cada critério, o que fazer agora e rotas de pivô para subir na carta.</p>
+            <div class="chart-foot">
+              <p id="chart-hint" class="chart-hint"></p>
+              <label class="switch-line"><input type="checkbox" id="toggle-history"> Comparar com o histórico</label>
+            </div>
           </div></div>
 
           <div id="loading-state" class="loading-state neat" hidden><div class="neat-inner">
@@ -216,15 +193,70 @@
             <button id="retry-btn" type="button" class="btn-secondary">Tentar de novo</button>
           </div></div>
 
-          <article id="report" class="report neat" hidden><div class="neat-inner" id="report-body"></div></article>
+          <div id="result" hidden>
+            <div class="tabs" id="result-tabs" role="tablist" aria-label="Resultado">
+              <button type="button" role="tab" id="tab-diag" data-tab="diag" aria-controls="panel-diag" aria-selected="true">Diagnóstico</button>
+              <button type="button" role="tab" id="tab-rumo" data-tab="rumo" aria-controls="panel-rumo" aria-selected="false" tabindex="-1">Para onde ir?</button>
+              <button type="button" role="tab" id="tab-export" data-tab="export" aria-controls="panel-export" aria-selected="false" tabindex="-1">Exportar</button>
+            </div>
 
-          <section id="origens" class="report neat"><div class="neat-inner">
-            <p class="panel-kicker">Origens</p>
-            <h3>De onde vem este framework</h3>
-            <p>O "Índice do Idiota" é o nome que Alex Hormozi dá ao gráfico do vídeo <a href="https://youtu.be/pwZJcLZc3_Y" target="_blank" rel="noopener noreferrer">"How To Make More Money Than You Deserve (My 2027 Framework)"</a>. As ideias por trás dele são mais antigas. Abaixo, cada fonte e o que ela sustenta — com honestidade sobre o que é de quem.</p>
-            <ul class="origins" id="origins-list"></ul>
-            <p class="disclaimer">Ferramenta educacional da Comunidade Maestros da IA. Não é afiliada nem endossada por Alex Hormozi, Warren Buffett ou pelos demais autores citados. A posição na carta é uma estimativa a partir das notas da rúbrica — não é garantia de resultado nem recomendação de investimento.</p>
-          </div></section>
+            <article id="panel-diag" class="report neat" role="tabpanel" aria-labelledby="tab-diag"><div class="neat-inner" id="report-body"></div></article>
+
+            <section id="panel-rumo" class="report neat" role="tabpanel" aria-labelledby="tab-rumo" hidden><div class="neat-inner">
+              <h3>Para onde você quer ir?</h3>
+              <p class="rumo-lead">Escolha um lado nos botões ou clicando na carta.</p>
+              <div id="dir-buttons" class="dir-buttons" role="group" aria-label="Lado da carta"></div>
+
+              <div class="field">
+                <div class="field-head">
+                  <label for="in-comp">Competências <span class="hint">(opcional)</span></label>
+                  <button type="button" class="btn-mic" data-target="in-comp" data-status="st-comp" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg><span class="mic-label">Ditar</span></button>
+                </div>
+                <textarea id="in-comp" class="short" maxlength="600" placeholder="Ex.: vendas consultivas, tráfego pago, gestão de equipe"></textarea>
+                <span id="st-comp" class="mic-status" aria-live="polite"></span>
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="in-hist">Histórico <span class="hint">(opcional)</span></label>
+                  <button type="button" class="btn-mic" data-target="in-hist" data-status="st-hist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg><span class="mic-label">Ditar</span></button>
+                </div>
+                <textarea id="in-hist" class="short" maxlength="600" placeholder="Ex.: 8 anos como gerente de clínica, já tive uma loja"></textarea>
+                <span id="st-hist" class="mic-status" aria-live="polite"></span>
+              </div>
+              <div class="field">
+                <div class="field-head">
+                  <label for="in-obj">Objetivos <span class="hint">(opcional)</span></label>
+                  <button type="button" class="btn-mic" data-target="in-obj" data-status="st-obj" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg><span class="mic-label">Ditar</span></button>
+                </div>
+                <textarea id="in-obj" class="short" maxlength="600"></textarea>
+                <span id="st-obj" class="mic-status" aria-live="polite"></span>
+              </div>
+
+              <button id="sug-btn" type="button" class="btn-primary sug-btn"><span class="gen-text">Sugerir negócios parecidos</span><span class="gen-loading">Procurando…</span></button>
+              <p id="sug-status" class="sug-status" aria-live="polite"></p>
+              <div id="sug-list" class="sug-list"></div>
+            </div></section>
+
+            <section id="panel-export" class="report neat" role="tabpanel" aria-labelledby="tab-export" hidden><div class="neat-inner">
+              <h3>Exportar e salvar</h3>
+              <div class="export-grid">
+                <button id="png-btn" type="button" class="btn-primary">Baixar a carta (PNG)</button>
+                <button id="print-btn" type="button" class="btn-secondary">Imprimir ou salvar PDF</button>
+                <button id="copy-btn" type="button" class="btn-secondary">Copiar como texto</button>
+                <button id="save-btn" type="button" class="btn-secondary">Salvar no histórico</button>
+              </div>
+              <p class="hint">O PNG leva a carta e a legenda dos números. O PDF leva o diagnóstico inteiro.</p>
+            </div></section>
+          </div>
+
+          <details id="origens-box" class="origins-box neat">
+            <summary>Origens do framework</summary>
+            <div class="origins-inner">
+              <p>O nome e o gráfico são de Alex Hormozi, no vídeo <a href="https://youtu.be/pwZJcLZc3_Y" target="_blank" rel="noopener noreferrer">"How To Make More Money Than You Deserve (My 2027 Framework)"</a>. As peças são mais antigas. Em ordem cronológica, com o que cada fonte sustenta:</p>
+              <ul class="origins" id="origins-list"></ul>
+              <p class="disclaimer">Ferramenta educacional da Comunidade Maestros da IA. Não é afiliada nem endossada por Alex Hormozi ou pelos demais autores citados. A posição na carta é uma estimativa a partir das notas da rúbrica — não é garantia de resultado nem recomendação de investimento.</p>
+            </div>
+          </details>
         </section>
       </div>
     </main>
@@ -275,12 +307,12 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="config.js"></script>
-  <script src="kill-switch.js"></script>
-  <script src="rate-limiter.js"></script>
+  <script src="config.js?v=20261112b"></script>
+  <script src="kill-switch.js?v=20261112b"></script>
+  <script src="rate-limiter.js?v=20261112b"></script>
   <script src="https://gate.maestrosdaia.com/v1/membership-gate.js"></script>
-  <script src="api-key-manager.js"></script>
-  <script src="feedback-widget.js"></script>
-  <script src="app.js"></script>
+  <script src="api-key-manager.js?v=20261112b"></script>
+  <script src="feedback-widget.js?v=20261112b"></script>
+  <script src="app.js?v=20261112b"></script>
 </body>
 </html>
