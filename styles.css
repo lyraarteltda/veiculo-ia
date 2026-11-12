@@ -576,3 +576,61 @@ details.more[open] > summary { margin-bottom: 8px; }
 @media (prefers-reduced-motion: reduce) {
   .chart-pop, .chart-pop.on, .ex-dot, .qhl-r, .dest-go { transition: none !important; animation: none !important; }
 }
+
+/* ── v4: the measured position in plain sight ─────────────────────────────── */
+.chart-read-row { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+.chart-reading { margin: 0; font-size: 18px; color: var(--ink); }
+.chart-reading b { font-weight: 700; }
+.rd-sim { color: var(--magenta-dark); font-weight: 700; }
+.calc-btn { font-size: 17px; color: var(--magenta-dark); padding: 0 4px; min-height: 40px; }
+.chart-svg.calc-on .boat, .chart-svg.calc-on .proj, .chart-svg.calc-on .arrows, .chart-svg.calc-on .dots,
+.chart-svg.calc-on .idea-tag, .chart-svg.calc-on .hist, .chart-svg.calc-on .dest, .chart-svg.calc-on .dest * { visibility: hidden !important; }
+.calc-seg { stroke: #b5246b; stroke-width: 7; opacity: .2; }
+.calc-seg.alt { opacity: .4; }
+.calc-anchor { animation: anchorDrop .45s ease-out; }
+@keyframes anchorDrop { from { transform: translateY(-28px); opacity: 0; } to { transform: none; opacity: 1; } }
+.calc-boat, .calc-p { pointer-events: none; }
+
+.conta-lead { margin: 0 0 8px; font-size: 16px; color: var(--ink-2); }
+.rubric td.pts { white-space: nowrap; font-family: var(--font-mono); font-size: 13px; }
+.pbar { display: inline-block; width: 44px; height: 8px; margin-right: 6px; vertical-align: middle; background: var(--paper-2); border: 1px solid var(--rule); }
+.pbar i { display: block; height: 100%; background: var(--magenta); }
+.rep-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0 12px; }
+.rep-tools .btn-link { font-size: 16px; color: var(--magenta-dark); }
+
+/* "E se…?" simulator: the chart stays in view while the scores move.
+   Desktop: chart on the left (sticky), sliders on the right. Phone/tablet: chart sticky on top, sliders below. */
+.chart-card.sim-on { position: sticky; top: var(--hdr, 66px); z-index: 15; align-self: start; box-shadow: 0 14px 26px -16px rgba(20,40,74,.6); }
+@media (min-width: 1001px) {
+  .studio.sim-mode { grid-template-columns: 1fr; }
+  .studio.sim-mode .brief-panel { display: none; }
+  .studio.sim-mode .stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(380px, 1fr); gap: var(--space-lg); align-items: start; }
+  .studio.sim-mode .stage > * { grid-column: 1 / -1; }
+  .studio.sim-mode .stage > .chart-card { grid-column: 1; }
+  .studio.sim-mode .stage > .sim-panel { grid-column: 2; }
+  .studio.sim-mode .sim-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 1000px) { .chart-card.sim-on .chart-wrap { max-width: min(100%, 360px); margin: 0 auto; } }
+.chart-card.sim-on .chart-hint, .chart-card.sim-on .anchor-key, .chart-card.sim-on .switch-line { display: none; }
+.sim-panel .neat-inner { padding: 22px 20px 16px; }
+.sim-head h3 { margin: 0 0 4px; font-size: 22px; font-style: italic; }
+.sim-read { margin: 4px 0 6px; font-size: 18px; line-height: 1.45; }
+.sim-delta { color: var(--magenta-dark); font-weight: 700; }
+.sim-dest { margin: 0 0 6px; font-size: 17px; }
+.sim-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 8px 0 12px; }
+.sim-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; }
+.sim-col { border: 0; margin: 0; padding: 0; min-width: 0; }
+.sim-col legend { padding: 0; margin-bottom: 4px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--ink); }
+.sim-row { padding: 6px 6px 2px; border-bottom: 1px dashed var(--rule); }
+.sim-row.changed { background: #fbeef4; }
+.sim-row label { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 10px; font-size: 16px; color: var(--ink); cursor: pointer; }
+.sim-num { font-family: var(--font-mono); font-size: 14px; white-space: nowrap; color: var(--ink-2); }
+.sim-num .sim-val { color: var(--ink); font-size: 16px; }
+.sim-ai { color: var(--magenta-dark); }
+.sim-row input[type="range"] { width: 100%; margin: 4px 0 2px; height: 30px; accent-color: var(--magenta); cursor: pointer; }
+@media (max-width: 700px) {
+  .sim-grid { grid-template-columns: 1fr; }
+  .sim-panel .neat-inner { padding: 18px 12px 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .calc-anchor { animation: none !important; } }
+@media print { .rep-tools, .calc-btn, .sim-panel { display: none !important; } }

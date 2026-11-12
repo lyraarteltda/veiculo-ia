@@ -8,8 +8,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veículo IA — Maestros da IA</title>
-  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja em que quadrante do Índice do Idiota ela cai, se ela depende de você, e arraste na carta até onde quer chegar para receber negócios parecidos que reaproveitam o que você já sabe.">
-  <link rel="stylesheet" href="styles.css?v=20261112h">
+  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja onde ela cai num gráfico de 0 a 100: dificuldade de operação × potencial financeiro. Veja a conta que gerou o ponto, simule notas e arraste até onde quer chegar para receber negócios que levam até lá.">
+  <link rel="stylesheet" href="styles.css?v=20261112i">
   <link rel="preconnect" href="https://gate.maestrosdaia.com">
   <link rel="preload" href="https://gate.maestrosdaia.com/v1/membership-gate.js" as="script">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4efe2'/%3E%3Crect x='2' y='2' width='28' height='28' fill='none' stroke='%2314284a' stroke-width='2'/%3E%3Cpath d='M16 5l3 11-3 11-3-11z' fill='%2314284a'/%3E%3Cpath d='M5 16l11-3 11 3-11 3z' fill='%23b5246b'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4efe2'/%3E%3C/svg%3E">
@@ -33,7 +33,7 @@
         <div class="gate-header">
           <p class="kicker">Índice do Idiota · 4 quadrantes + âncora</p>
           <h1 class="gradient-text">Veículo IA</h1>
-          <p class="subtitle">Descubra em qual "barco" a sua ideia de negócio está — e como subir na carta.</p>
+          <p class="subtitle">Veja onde a sua ideia de negócio cai no gráfico, por quê, e como chegar mais alto.</p>
           <p class="community-badge">Exclusivo para membros da Comunidade Maestros da IA</p>
         </div>
 
@@ -76,7 +76,7 @@
         </div>
 
         <div class="key-actions">
-          <button id="key-continue" class="btn-primary" disabled>Abrir a carta</button>
+          <button id="key-continue" class="btn-primary" disabled>Abrir o gráfico</button>
           <button id="key-skip" class="btn-secondary">Pular por enquanto</button>
         </div>
 
@@ -157,8 +157,8 @@
 
           <div class="gen-actions">
             <button id="generate-btn" class="btn-primary">
-              <span class="gen-text">Posicionar na carta</span>
-              <span class="gen-loading">Navegando…</span>
+              <span class="gen-text">Posicionar no gráfico</span>
+              <span class="gen-loading">Calculando…</span>
             </button>
             <div class="row-links">
               <button id="example-btn" type="button" class="btn-link">Usar um exemplo</button>
@@ -171,8 +171,8 @@
         <section class="stage">
           <div id="stage-head" class="stage-head" hidden><h2 class="tb-title" id="tb-title"></h2></div>
 
-          <div class="chart-card neat"><div class="neat-inner">
-            <div class="chart-wrap" id="chart-wrap" tabindex="0" role="group" aria-label="Carta interativa. Depois da avaliação, use as setas para mover o destino, Enter para sugerir negócios e Esc para cancelar." aria-describedby="dest-live">
+          <div class="chart-card neat" id="chart-card"><div class="neat-inner">
+            <div class="chart-wrap" id="chart-wrap" tabindex="0" role="group" aria-label="Gráfico interativo. Depois da avaliação, use as setas para mover o destino, Enter para sugerir negócios e Esc para cancelar." aria-describedby="dest-live">
               <div id="chart-host"></div>
               <div id="info-btns"></div>
               <div id="boat-handle" class="boat-handle" hidden aria-hidden="true" title="Arraste o barco"></div>
@@ -182,15 +182,31 @@
               <p id="dest-live" class="sr-only" aria-live="polite"></p>
             </div>
             <div class="chart-foot">
+              <div class="chart-read-row"><p id="chart-reading" class="chart-reading" aria-live="polite"></p><button type="button" id="calc-btn" class="btn-link calc-btn" hidden>▶ Ver o cálculo</button></div>
               <p id="chart-hint" class="chart-hint"></p>
               <span class="anchor-key"><span class="anc-ico" aria-hidden="true">⚓</span> Âncora = depende de você <button type="button" class="zinfo zinfo-inline" data-q="anchor" aria-expanded="false" aria-controls="zone-card" aria-label="O que é a âncora?">i</button></span>
               <label class="switch-line"><input type="checkbox" id="toggle-history"> Comparar com o histórico</label>
             </div>
           </div></div>
 
+          <section id="sim-panel" class="sim-panel neat" hidden aria-labelledby="sim-title"><div class="neat-inner">
+            <div class="sim-head">
+              <h3 id="sim-title">E se…? Simule as notas</h3>
+              <p id="sim-read" class="sim-read" aria-live="polite"></p>
+              <p id="sim-dest" class="sim-dest" hidden></p>
+              <div class="sim-actions">
+                <button type="button" id="sim-reset" class="btn-secondary">Voltar às notas da IA</button>
+                <button type="button" id="sim-save" class="btn-secondary">Salvar simulação no histórico</button>
+                <button type="button" id="sim-close" class="btn-link">Fechar o simulador</button>
+              </div>
+            </div>
+            <div id="sim-rows" class="sim-grid"></div>
+            <p class="hint">Sem IA: é só a conta (nota × peso). A simulação não muda o diagnóstico salvo.</p>
+          </div></section>
+
           <div id="loading-state" class="loading-state neat" hidden><div class="neat-inner">
             <svg class="helm" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="18" fill="none" stroke="#14284a" stroke-width="4"/><circle cx="32" cy="32" r="6" fill="#b5246b"/><g stroke="#14284a" stroke-width="4" stroke-linecap="round"><path d="M32 4v14M32 46v14M4 32h14M46 32h14M12 12l10 10M42 42l10 10M12 52l10-10M42 22l10-10"/></g></svg>
-            <h3 id="loading-title">Tirando as sondagens…</h3>
+            <h3 id="loading-title">Calculando a posição…</h3>
             <p id="loading-sub">A IA está pontuando os 14 critérios da rúbrica.</p>
           </div></div>
 
@@ -211,7 +227,7 @@
             <section id="panel-rumo" class="report neat" role="tabpanel" aria-labelledby="tab-rumo" hidden><div class="neat-inner">
               <h3>Para onde você quer ir?</h3>
               <p id="dest-summary" class="dest-summary"></p>
-              <div id="dir-buttons" class="dir-buttons" role="group" aria-label="Rumos prontos"></div>
+              <div id="dir-buttons" class="dir-buttons" role="group" aria-label="Atalhos"></div>
 
               <div class="field">
                 <div class="field-head">
@@ -246,12 +262,12 @@
             <section id="panel-export" class="report neat" role="tabpanel" aria-labelledby="tab-export" hidden><div class="neat-inner">
               <h3>Exportar e salvar</h3>
               <div class="export-grid">
-                <button id="png-btn" type="button" class="btn-primary">Baixar a carta (PNG)</button>
+                <button id="png-btn" type="button" class="btn-primary">Baixar o gráfico (PNG)</button>
                 <button id="print-btn" type="button" class="btn-secondary">Imprimir ou salvar PDF</button>
                 <button id="copy-btn" type="button" class="btn-secondary">Copiar como texto</button>
                 <button id="save-btn" type="button" class="btn-secondary">Salvar no histórico</button>
               </div>
-              <p class="hint">O PNG leva a carta e a legenda dos números. O PDF leva o diagnóstico inteiro.</p>
+              <p class="hint">O PNG leva o gráfico, com a escala, e a legenda dos números. O PDF leva o diagnóstico inteiro.</p>
             </div></section>
           </div>
 
@@ -260,7 +276,7 @@
             <div class="origins-inner">
               <p>O nome e o gráfico são de Alex Hormozi, no vídeo <a href="https://youtu.be/pwZJcLZc3_Y" target="_blank" rel="noopener noreferrer">"How To Make More Money Than You Deserve (My 2027 Framework)"</a>. As peças são mais antigas. Em ordem cronológica, com o que cada fonte sustenta:</p>
               <ul class="origins" id="origins-list"></ul>
-              <p class="disclaimer">Ferramenta educacional da Comunidade Maestros da IA. Não é afiliada nem endossada por Alex Hormozi ou pelos demais autores citados. A posição na carta é uma estimativa a partir das notas da rúbrica — não é garantia de resultado nem recomendação de investimento.</p>
+              <p class="disclaimer">Ferramenta educacional da Comunidade Maestros da IA. Não é afiliada nem endossada por Alex Hormozi ou pelos demais autores citados. A posição no gráfico é uma estimativa a partir das notas da rúbrica — não é garantia de resultado nem recomendação de investimento.</p>
             </div>
           </details>
         </section>
@@ -307,18 +323,18 @@
         <button id="lib-close" class="btn-icon" aria-label="Fechar">&times;</button>
       </div>
       <div id="lib-list" class="lib-list"></div>
-      <p class="modal-note">O histórico fica só neste navegador. Todas as ideias salvas aparecem como boias numeradas na mesma carta, para você comparar.</p>
+      <p class="modal-note">O histórico fica só neste navegador. Todas as ideias salvas aparecem como marcadores numerados no mesmo gráfico, para você comparar.</p>
     </div>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="config.js?v=20261112h"></script>
-  <script src="kill-switch.js?v=20261112h"></script>
-  <script src="rate-limiter.js?v=20261112h"></script>
+  <script src="config.js?v=20261112i"></script>
+  <script src="kill-switch.js?v=20261112i"></script>
+  <script src="rate-limiter.js?v=20261112i"></script>
   <script src="https://gate.maestrosdaia.com/v1/membership-gate.js"></script>
-  <script src="api-key-manager.js?v=20261112h"></script>
-  <script src="feedback-widget.js?v=20261112h"></script>
-  <script src="app.js?v=20261112h"></script>
+  <script src="api-key-manager.js?v=20261112i"></script>
+  <script src="feedback-widget.js?v=20261112i"></script>
+  <script src="app.js?v=20261112i"></script>
 </body>
 </html>

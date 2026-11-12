@@ -4,99 +4,125 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sobre o Veículo IA — Maestros da IA</title>
-  <meta name="description" content="O que é o Veículo IA, como usar, os 4 quadrantes e a âncora &quot;depende de você&quot;, como a posição é calculada, como funcionam o arraste e as sugestões de negócios e as origens do Índice do Idiota.">
-  <link rel="stylesheet" href="styles.css?v=20261112h">
+  <meta name="description" content="Como ler o gráfico do Veículo IA (dificuldade de operação × potencial financeiro, de 0 a 100), como a posição é calculada, o cálculo animado, o simulador de notas, os 4 quadrantes e a âncora, e as origens do Índice do Idiota.">
+  <link rel="stylesheet" href="styles.css?v=20261112i">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4efe2'/%3E%3Crect x='2' y='2' width='28' height='28' fill='none' stroke='%2314284a' stroke-width='2'/%3E%3Cpath d='M16 5l3 11-3 11-3-11z' fill='%2314284a'/%3E%3Cpath d='M5 16l11-3 11 3-11 3z' fill='%23b5246b'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4efe2'/%3E%3C/svg%3E">
 </head>
 <body>
   <div class="bg-gradient"></div>
   <article class="doc">
-    <a href="index.html" class="back">← Voltar para a carta</a>
+    <a href="index.html" class="back">← Voltar para o gráfico</a>
     <p class="panel-kicker">Comunidade Maestros da IA · ferramenta para membros</p>
     <h1>Veículo IA</h1>
-    <p class="lead">Escreva ou dite a sua ideia de negócio e veja em qual dos <strong>4 quadrantes</strong> do "Índice do Idiota" ela cai e se ela carrega a <strong>âncora "depende de você"</strong>: uma carta com a posição da ideia, a nota de cada critério, o que fazer nos próximos 30 dias, rotas para subir na carta e, ao arrastar o barco até onde você quer chegar, negócios que levam até lá reaproveitando o que você já sabe. O quadro original é de Alex Hormozi; as fontes estão no fim desta página.</p>
+    <p class="lead">Escreva ou dite a sua ideia de negócio e veja onde ela cai num gráfico de 0 a 100: <strong>dificuldade de operação</strong> da esquerda para a direita e <strong>potencial financeiro</strong> de baixo para cima. A ferramenta mostra a conta que gerou o ponto e o quadrante em que ele caiu, e deixa você simular notas e arrastar o barco até onde quer chegar para receber negócios que levam até lá. O quadro original é de Alex Hormozi; as fontes estão no fim desta página.</p>
     <p>Endereço: <a href="https://veiculoia.maestrosdaia.com">https://veiculoia.maestrosdaia.com</a></p>
 
     <h2>Para quem é</h2>
-    <p>Para membros que estão escolhendo o que vender, pensando em mudar de negócio ou querendo comparar ideias antes de investir tempo e dinheiro. A pergunta é: <em>"que barco me dá a melhor chance de chegar ao resultado que eu quero?"</em></p>
+    <p>Para membros que estão escolhendo o que vender, pensando em mudar de negócio ou querendo comparar ideias antes de investir tempo e dinheiro. A pergunta é: <em>"que tipo de negócio me dá a melhor chance de chegar ao resultado que eu quero?"</em></p>
+
+    <h2>Como ler o gráfico</h2>
+    <p>O gráfico é um plano x,y de verdade, com escala de 0 a 100 nos dois eixos:</p>
+    <ul>
+      <li><strong>Dificuldade de operação</strong> (eixo horizontal): 0 = fácil, 100 = difícil. Quão difícil é operar o negócio.</li>
+      <li><strong>Potencial financeiro</strong> (eixo vertical): 0 = baixo, 100 = alto. Quanto dinheiro dá para fazer, realisticamente.</li>
+    </ul>
+    <p>A posição é <strong>medida, não escolhida</strong>: a IA dá uma nota de 0 a 10 a cada um de 14 critérios e a ferramenta faz a conta. As linhas tracejadas que saem do barco terminam nos dois eixos, com o valor de cada um (por exemplo, 38 embaixo e 72 à esquerda). Ao lado do gráfico fica uma leitura só, como <em>"Dificuldade 38 · Potencial financeiro 72 → Arbitragem"</em>. As linhas do meio (50 em cada eixo) dividem os quatro quadrantes; as linhas claras em 25 e 75 só ajudam a ler a escala.</p>
 
     <h2>Os 4 quadrantes e a âncora</h2>
-    <p>A carta tem dois eixos: <strong>dificuldade de operar</strong> (da esquerda para a direita) e <strong>potencial de dinheiro</strong> (de baixo para cima). As duas linhas do meio dividem a carta em quatro quadrantes. Cada um tem um botão <strong>i</strong> no canto de fora, ao lado do nome, que abre o que ele significa, o que pesa, o que dá dinheiro, a armadilha clássica, para que objetivo serve, exemplos e a fonte.</p>
+    <p>Cada quadrante tem um botão <strong>i</strong> no canto de fora, ao lado do nome. Ele abre o que o quadrante significa, o que pesa, o que dá dinheiro, a armadilha clássica, para que objetivo serve, exemplos e a fonte.</p>
     <table>
       <tr><th>Quadrante</th><th>Onde fica</th><th>No vídeo</th><th>Exemplos</th></tr>
-      <tr><td data-l="Quadrante">Arbitragem</td><td data-l="Onde fica">fácil · muito dinheiro</td><td data-l="No vídeo">veículo 5</td><td data-l="Exemplos">med spas, assessoria de patrimônio, limpeza comercial, elevadores, cobrança, gestão de resíduos</td></tr>
-      <tr><td data-l="Quadrante">Fosso</td><td data-l="Onde fica">difícil · muito dinheiro</td><td data-l="No vídeo">veículo 4</td><td data-l="Exemplos">SaaS, franquias, roll-ups, marketplaces, farmacêutica, bancos, energia</td></tr>
-      <tr><td data-l="Quadrante">Caixa inicial</td><td data-l="Onde fica">fácil · pouco dinheiro</td><td data-l="No vídeo">veículo 2</td><td data-l="Exemplos">dropshipping, serviços leves para casa, máquinas de venda, wholesale imobiliário, Airbnb, afiliados</td></tr>
-      <tr><td data-l="Quadrante">Commodities braçais</td><td data-l="Onde fica">difícil · pouco dinheiro</td><td data-l="No vídeo">veículo 1</td><td data-l="Exemplos">restaurante tradicional, academia de serviço, agência para pequenas empresas, varejo, eventos</td></tr>
+      <tr><td data-l="Quadrante">Arbitragem</td><td data-l="Onde fica">fácil · alto potencial financeiro</td><td data-l="No vídeo">veículo 5</td><td data-l="Exemplos">med spas, assessoria de patrimônio, limpeza comercial, elevadores, cobrança, gestão de resíduos</td></tr>
+      <tr><td data-l="Quadrante">Fosso competitivo</td><td data-l="Onde fica">difícil · alto potencial financeiro</td><td data-l="No vídeo">veículo 4</td><td data-l="Exemplos">SaaS, franquias, roll-ups, marketplaces, farmacêutica, bancos, energia</td></tr>
+      <tr><td data-l="Quadrante">Negócio de entrada</td><td data-l="Onde fica">fácil · baixo potencial financeiro</td><td data-l="No vídeo">veículo 2</td><td data-l="Exemplos">dropshipping, serviços leves para casa, máquinas de venda, wholesale imobiliário, Airbnb, afiliados</td></tr>
+      <tr><td data-l="Quadrante">Commodity braçal</td><td data-l="Onde fica">difícil · baixo potencial financeiro</td><td data-l="No vídeo">veículo 1</td><td data-l="Exemplos">restaurante tradicional, academia de serviço, agência para pequenas empresas, varejo, eventos</td></tr>
       <tr><td data-l="Quadrante">⚓ Âncora: depende de você</td><td data-l="Onde fica">em qualquer quadrante</td><td data-l="No vídeo">veículo 3</td><td data-l="Exemplos">coaching online, implementação de IA, cirurgiões, agências enterprise, influenciadores</td></tr>
     </table>
-    <p><strong>A âncora.</strong> Quando a nota de <em>independência do fundador</em> é 4 ou menos (de 10), o barco ganha uma âncora e o Diagnóstico diz: <em>"gera renda, mas vale pouco na venda"</em>. O negócio só anda com você. Isso pode acontecer em qualquer quadrante: um cirurgião pode ganhar muito e ainda assim não ter o que vender. A mesma regra vale para os exemplos da carta e para as sugestões, que também mostram a âncora. Para soltar a âncora: processos escritos, equipe que entrega sem você, contratos recorrentes e produto no lugar de hora.</p>
-    <p><strong>Na fronteira.</strong> Quando a ideia cai a até 6 pontos de uma das linhas do meio, o Diagnóstico avisa: <em>"na fronteira entre X e Y"</em>. Uma mudança pequena nas notas pode levá-la para o quadrante vizinho.</p>
+    <p><strong>A âncora.</strong> Quando a nota de <em>independência do fundador</em> é 4 ou menos (de 10), o barco ganha uma âncora e o Diagnóstico diz: <em>"gera renda, mas vale pouco na venda"</em>. O negócio só anda com você. Isso pode acontecer em qualquer quadrante: um cirurgião pode ganhar muito e ainda assim não ter o que vender. A mesma regra vale para os exemplos do gráfico e para as sugestões. Para soltar a âncora: processos escritos, equipe que entrega sem você, contratos recorrentes e produto no lugar de hora.</p>
+    <p><strong>Na fronteira.</strong> Quando a ideia cai a até 6 pontos de uma das linhas do meio, o Diagnóstico avisa: <em>"na fronteira entre X e Y"</em>. Uma mudança pequena nas notas pode levá-la para o quadrante vizinho, e o simulador mostra quais.</p>
 
     <h2>Por que não existe mais a zona do meio</h2>
-    <p>No vídeo, o veículo 3 (o "especialista") ocupa o centro da carta: dificuldade média, dinheiro médio. Até novembro de 2026 a ferramenta também tinha essa zona central. Nós a trocamos pela âncora porque o que define o veículo 3 não é estar no meio, e sim depender da pessoa. A zona do meio misturava as duas coisas: um negócio que anda sozinho caía em "especialista" só por estar no centro, e um cirurgião que ganha muito caía num canto de cima e perdia o rótulo, embora continue dependendo dele. A âncora mede o que importa (a independência do fundador) e funciona em qualquer canto. A lógica é a de John Warrillow em <em>Built to Sell</em> (2010): um negócio que depende do fundador pode gerar renda alta, mas vale pouco na venda. Os outros quatro veículos do vídeo viraram os quatro quadrantes. Diagnósticos salvos na versão anterior continuam no histórico, com um aviso para refazer.</p>
+    <p>No vídeo, o veículo 3 (o "especialista", que dá <em>renda, mas não valor de empresa</em>) ocupa o centro do gráfico. Até novembro de 2026 a ferramenta também tinha essa zona central. Nós a trocamos pela âncora porque o que define o veículo 3 não é estar no meio, e sim depender da pessoa. A zona do meio misturava as duas coisas: um negócio que anda sozinho caía em "especialista" só por estar no centro, e um cirurgião que ganha muito caía num canto de cima e perdia o rótulo, embora continue dependendo dele. A âncora mede o que importa (a independência do fundador) e funciona em qualquer canto. A lógica é a de John Warrillow em <em>Built to Sell</em> (2010): um negócio que depende do fundador pode gerar renda alta, mas vale pouco na venda. Os outros quatro veículos do vídeo viraram os quatro quadrantes.</p>
 
     <h2>Encaixe com o objetivo</h2>
     <table>
       <tr><th>Objetivo</th><th>Bom</th><th>Parcial</th><th>Ruim</th></tr>
-      <tr><td data-l="Objetivo">Fluxo de caixa</td><td data-l="Bom">Caixa inicial, Arbitragem</td><td data-l="Parcial">Commodities braçais</td><td data-l="Ruim">Fosso</td></tr>
-      <tr><td data-l="Objetivo">Renda alta</td><td data-l="Bom">Arbitragem; Caixa inicial ou Fosso com âncora</td><td data-l="Parcial">Caixa inicial ou Fosso sem âncora; Commodities braçais com âncora</td><td data-l="Ruim">Commodities braçais sem âncora</td></tr>
-      <tr><td data-l="Objetivo">Valor de empresa</td><td data-l="Bom">Fosso ou Arbitragem sem âncora</td><td data-l="Parcial">com âncora, no máximo parcial; Commodities braçais</td><td data-l="Ruim">Caixa inicial</td></tr>
-      <tr><td data-l="Objetivo">Bilhões</td><td data-l="Bom">Fosso sem âncora</td><td data-l="Parcial">Arbitragem</td><td data-l="Ruim">os demais, inclusive Fosso com âncora</td></tr>
+      <tr><td data-l="Objetivo">Fluxo de caixa</td><td data-l="Bom">Negócio de entrada, Arbitragem</td><td data-l="Parcial">Commodity braçal</td><td data-l="Ruim">Fosso competitivo</td></tr>
+      <tr><td data-l="Objetivo">Renda alta</td><td data-l="Bom">Arbitragem; Negócio de entrada ou Fosso competitivo com âncora</td><td data-l="Parcial">Negócio de entrada ou Fosso competitivo sem âncora; Commodity braçal com âncora</td><td data-l="Ruim">Commodity braçal sem âncora</td></tr>
+      <tr><td data-l="Objetivo">Valor de empresa</td><td data-l="Bom">Fosso competitivo ou Arbitragem sem âncora</td><td data-l="Parcial">com âncora, no máximo parcial; Commodity braçal</td><td data-l="Ruim">Negócio de entrada</td></tr>
+      <tr><td data-l="Objetivo">Bilhões</td><td data-l="Bom">Fosso competitivo sem âncora</td><td data-l="Parcial">Arbitragem</td><td data-l="Ruim">os demais, inclusive Fosso competitivo com âncora</td></tr>
     </table>
-    <p>Um caso tem duas regras que se contradizem: Commodities braçais com âncora para quem quer renda alta. A âncora puxa para "bom" (renda que depende de você) e o quadrante puxa para "ruim" (trabalho pesado e pouco dinheiro); a ferramenta mostra "parcial".</p>
+    <p>Um caso tem duas regras que se contradizem: Commodity braçal com âncora para quem quer renda alta. A âncora puxa para "bom" (renda que depende de você) e o quadrante puxa para "ruim" (trabalho pesado e pouco dinheiro); a ferramenta mostra "parcial".</p>
 
     <h2>Como usar</h2>
     <ol>
       <li>Entre com o e-mail ou o WhatsApp cadastrados na Comunidade Maestros da IA.</li>
-      <li>Cole a sua chave da OpenRouter e escolha o modelo (Claude, GPT, Gemini, DeepSeek ou um dos modelos em alta).</li>
+      <li>Cole a sua chave da OpenRouter, escolha o modelo (Claude, GPT, Gemini, DeepSeek ou um dos modelos em alta) e clique em <strong>Abrir o gráfico</strong>.</li>
       <li>Escreva a ideia — ou toque em <strong>Ditar</strong> e fale (português do Brasil; funciona no Chrome, Edge e Safari).</li>
-      <li>Escolha o objetivo: fluxo de caixa, renda alta, valor de empresa ou bilhões. Clique em <strong>Posicionar na carta</strong>.</li>
-      <li>Veja o barco na carta e o <strong>Diagnóstico</strong>: posição, quadrante, âncora (se houver), aviso de fronteira, teste do bilionário, encaixe com o objetivo, próximos passos e três rotas de pivô (os números na carta).</li>
-      <li><strong>Arraste o barco</strong> até onde você quer chegar e toque em <strong>Sugerir negócios para chegar aqui</strong> (veja abaixo). Em <strong>Exportar</strong>, baixe o PNG, salve em PDF, copie o texto ou salve no histórico.</li>
+      <li>Escolha o objetivo: fluxo de caixa, renda alta, valor de empresa ou bilhões. Clique em <strong>Posicionar no gráfico</strong>.</li>
+      <li>Assista à conta: o barco sai do 0,0 e cada critério o empurra pelos seus pontos (veja abaixo). Depois leia o <strong>Diagnóstico</strong>: posição, quadrante, âncora (se houver), aviso de fronteira, teste do bilionário, encaixe com o objetivo, próximos passos e três pivôs (os números no gráfico).</li>
+      <li>Use <strong>Simular notas (e se…?)</strong> para ver o barco andar quando uma nota muda.</li>
+      <li><strong>Arraste o barco</strong> até onde você quer chegar e toque em <strong>Sugerir negócios para chegar aqui</strong>. Em <strong>Exportar</strong>, baixe o PNG (com a escala), salve em PDF, copie o texto ou salve no histórico.</li>
     </ol>
 
-    <h2>Exemplos na carta</h2>
-    <p>A carta começa limpa. Passe o mouse sobre ela (no celular, toque num ponto) e aparecem os 2 a 4 negócios do vídeo mais perto dali, com nome e, quando for o caso, a âncora. Toque no <strong>+</strong> de um deles para ver em que quadrante ele está, o que pesa na dificuldade, o que pesa no dinheiro e a fonte. Um clique fixa o quadro; Esc ou um clique fora fecha. As posições dos exemplos são ilustrativas.</p>
+    <h2>Como a posição é calculada</h2>
+    <p>A IA <strong>não escolhe</strong> o quadrante. Ela dá notas de 0 a 10 para 14 critérios fixos, cada uma com uma justificativa. A ferramenta faz a conta: cada critério vale no máximo um certo número de pontos, e os máximos de cada eixo somam 100.</p>
+    <ul>
+      <li><strong>Dificuldade de operação</strong> = mão de obra (até 22) + habilidade (até 20) + capital (até 18) + operação (até 16) + regulação (até 14) + tempo até maturar (até 10).</li>
+      <li><strong>Potencial financeiro</strong> = teto do mercado (até 18) + escala (até 14) + fosso (até 14) + vento a favor (até 14) + margem (até 12) + recorrência (até 10) + independência do fundador (até 10) + concorrência (até 8, conta contra: vale 10 − nota) + o ajuste do "parece legal" (até 3 pontos para mais ou para menos).</li>
+      <li><strong>Pontos do critério = nota ÷ 10 × máximo.</strong> Por exemplo, capital necessário com nota 7 dá 7 ÷ 10 × 18 = 12,6 pontos. É exatamente nota × peso × 10.</li>
+      <li>O quadrante sai das linhas do meio (50 em cada eixo). A âncora sai da nota de independência do fundador (4 ou menos). A mesma rúbrica sempre cai no mesmo ponto.</li>
+      <li>No Diagnóstico, <strong>"Como o ponto foi calculado"</strong> mostra a tabela inteira: nota, pontos de cada critério (com uma barrinha) e os subtotais, como "Dificuldade de operação = 38 de 100".</li>
+      <li>Os exemplos de calibração dados ao modelo caem assim: restaurante tradicional em Commodity braçal com âncora; dropshipping em Negócio de entrada; coaching online em Negócio de entrada com âncora e na fronteira com Arbitragem; SaaS B2B em Fosso competitivo; med spa para público 50+ em Arbitragem.</li>
+    </ul>
+
+    <h2>O cálculo animado</h2>
+    <p>Quando sai um diagnóstico novo, e sempre que você clica em <strong>▶ Ver o cálculo</strong>, o barco parte do ponto (0, 0). Primeiro os 6 critérios de dificuldade o empurram para a direita, um de cada vez, com uma legenda curta (por exemplo, <em>"Capital necessário · nota 7 de 10 · +12,6 (vale até 18)"</em>). Depois os 8 critérios de potencial financeiro o empurram para cima (a concorrência conta contra) e, por fim, entra o ajuste do "parece legal". Os valores nos eixos contam junto e um rastro claro mostra o trecho de cada critério. No fim acende o quadrante ("cai em Arbitragem"), a âncora desce se a independência do fundador for 4 ou menos e aparece o aviso de fronteira, quando for o caso. Leva menos de 7 segundos; um clique, um toque ou Esc pulam para o fim. Se o seu sistema pede menos movimento, a ferramenta mostra direto o estado final.</p>
+
+    <h2>Simular notas (e se…?)</h2>
+    <p>No Diagnóstico, <strong>Simular notas (e se…?)</strong> troca a nota de cada critério por um controle deslizante de 0 a 10, mais o do "parece legal". Ao mexer num controle, o barco anda na hora: a posição da IA fica como um barco-fantasma, com uma linha fina até a simulação, e a leitura mostra os números novos, o quadrante, a âncora e a diferença (por exemplo, <em>"+9 potencial · −4 dificuldade"</em>). Se houver um destino marcado, aparece a distância até ele e "chega perto" quando for de até 15 pontos. Cada pivô do Diagnóstico tem <strong>Ver no simulador</strong>, que carrega as notas que aquele pivô muda. <strong>Voltar às notas da IA</strong> desfaz tudo. A simulação não usa IA (é só a conta) e não muda o diagnóstico salvo; se quiser, use <strong>Salvar simulação no histórico</strong>, que guarda a simulação marcada como tal.</p>
+
+    <h2>Exemplos no gráfico</h2>
+    <p>O gráfico começa limpo. Passe o mouse sobre ele (no celular, toque num ponto) e aparecem os 2 a 4 negócios do vídeo mais perto dali, com nome e, quando for o caso, a âncora. Toque no <strong>+</strong> de um deles para ver em que quadrante ele está, o que pesa na dificuldade, o que pesa no potencial financeiro e a fonte. Um clique fixa o quadro; Esc ou um clique fora fecha. As posições dos exemplos são ilustrativas.</p>
 
     <h2>Arraste até onde você quer chegar</h2>
-    <p>Depois da primeira avaliação, aperte e arraste na carta. No computador vale arrastar de qualquer ponto ou do próprio barco; no celular, arraste a partir do barco (assim a página continua rolando quando você desliza o dedo no resto da carta). Enquanto você arrasta, o barco fica parado onde a ideia está, uma boia de destino segue o seu dedo com uma rota tracejada, e um letreiro mostra a diferença (por exemplo, <em>"+22 dinheiro · −10 dificuldade · Arbitragem"</em>), o quadrante de destino fica levemente destacado e os exemplos mais perto aparecem. Ao soltar, a boia fica ali (dá para arrastar de novo) e surge o botão <strong>Sugerir negócios para chegar aqui</strong>. Enquanto a IA procura, ele mostra <em>"Procurando negócios…"</em>; quando as sugestões chegam, os números aparecem na carta e o botão vira <strong>Ver as sugestões ↓</strong>, que leva à lista e some depois que você a vê.</p>
-    <p>Pelo teclado: dê foco na carta (Tab), mova a boia com as setas (Shift anda 10 pontos de cada vez) e aperte Enter para pedir as sugestões. Os atalhos <strong>↑ mais dinheiro</strong>, <strong>← mais fácil</strong>, <strong>↖ Arbitragem</strong> e <strong>↗ Fosso</strong>, na aba <strong>Para onde ir?</strong>, colocam a boia num ponto pronto.</p>
-    <p>Preencha, se quiser, <strong>Competências</strong>, <strong>Histórico</strong> e <strong>Objetivos</strong> (cada campo tem o botão Ditar). A IA devolve 5 negócios que reaproveitam o que você sabe, com a mesma rúbrica de 14 critérios. A ferramenta calcula onde cada um cai, mede a distância até a boia, ordena do mais perto para o mais longe e marca <strong>"chega perto"</strong> (a até 15 pontos do destino) ou <strong>"fica longe"</strong> pelo número calculado, não pela opinião do modelo. Cada sugestão mostra a âncora quando depende de você, pode ser <strong>avaliada a fundo</strong> (vira a ideia atual e ganha o diagnóstico completo) ou salva no histórico.</p>
+    <p>Depois da primeira avaliação, aperte e arraste no gráfico. No computador vale arrastar de qualquer ponto ou do próprio barco; no celular, arraste a partir do barco (assim a página continua rolando quando você desliza o dedo no resto do gráfico). Enquanto você arrasta, o barco fica parado onde a ideia está, um marcador de destino segue o seu dedo com uma linha tracejada e o aviso mostra primeiro a posição do destino e depois a diferença (por exemplo, <em>"Destino: dificuldade 25 · potencial 80 · Arbitragem"</em> e <em>"+9 potencial · −4 dificuldade"</em>). O quadrante de destino fica levemente destacado e os exemplos mais perto aparecem. Ao soltar, o destino fica ali (dá para arrastar de novo) e surge o botão <strong>Sugerir negócios para chegar aqui</strong>. Enquanto a IA procura, ele mostra <em>"Procurando negócios…"</em>; quando as sugestões chegam, os números aparecem no gráfico e o botão vira <strong>Ver as sugestões ↓</strong>, que leva à lista e some depois que você a vê.</p>
+    <p>Pelo teclado: dê foco no gráfico (Tab), mova o destino com as setas (Shift anda 10 pontos de cada vez) e aperte Enter para pedir as sugestões. Os atalhos <strong>↑ mais potencial financeiro</strong>, <strong>← mais fácil</strong>, <strong>↖ Arbitragem</strong> e <strong>↗ Fosso competitivo</strong>, na aba <strong>Para onde ir?</strong>, colocam o destino num ponto pronto.</p>
+    <p>Preencha, se quiser, <strong>Competências</strong>, <strong>Histórico</strong> e <strong>Objetivos</strong> (cada campo tem o botão Ditar). A IA devolve 5 negócios que reaproveitam o que você sabe, com a mesma rúbrica de 14 critérios. A ferramenta calcula onde cada um cai, mede a distância até o destino, ordena do mais perto para o mais longe e marca <strong>"chega perto"</strong> (a até 15 pontos do destino) ou <strong>"fica longe"</strong> pelo número calculado, não pela opinião do modelo. Cada sugestão mostra a âncora quando depende de você, pode ser <strong>avaliada a fundo</strong> (vira a ideia atual e ganha o diagnóstico completo) ou salva no histórico.</p>
 
-    <h2>Como a posição é calculada</h2>
-    <p>A IA <strong>não escolhe</strong> o veículo. Ela dá notas de 0 a 10 para 14 critérios fixos, cada uma com uma justificativa. A ferramenta faz a conta:</p>
+    <h2>O que vem do vídeo</h2>
     <ul>
-      <li><strong>Dificuldade de operar</strong> = mão de obra (22%), barreira de habilidade (20%), capital (18%), operação (16%), regulação (14%) e tempo até maturar (10%).</li>
-      <li><strong>Potencial de dinheiro</strong> = teto do mercado (18%), escalabilidade (14%), fosso (14%), vento a favor (14%), margem (12%), recorrência (10%), independência do fundador (10%) e concorrência (8%, conta contra) — mais o desconto do "parece legal" (até 3 pontos para mais ou para menos).</li>
-      <li>O quadrante sai das linhas do meio (50 em cada eixo). A âncora sai da nota de independência do fundador (4 ou menos). A mesma rúbrica sempre cai no mesmo ponto.</li>
-      <li>Os exemplos de calibração dados ao modelo caem assim: restaurante tradicional em Commodities braçais com âncora; dropshipping em Caixa inicial; coaching online em Caixa inicial com âncora e na fronteira com Arbitragem; SaaS B2B em Fosso; med spa para público 50+ em Arbitragem.</li>
-      <li>Pivôs e sugestões passam pela mesma conta: a ferramenta recalcula a posição de cada um e desenha a rota.</li>
+      <li>Os dois eixos: quão difícil é operar × quanto dinheiro dá para fazer, realisticamente.</li>
+      <li>Os quatro cantos são os veículos 1, 2, 4 e 5; o veículo 3 (renda, mas não valor de empresa) é a âncora.</li>
+      <li>O teste do bilionário ("como é isso no máximo?") entra no <em>teto do mercado</em> e no Diagnóstico.</li>
+      <li>O desconto do "parece legal" é o ajuste de até 3 pontos no potencial financeiro.</li>
+      <li>Os tipos de fosso (habilidade, capital, regulação, tempo, efeito de rede) entram na <em>força do fosso</em>; os motores da arbitragem (demanda crescendo, oferta presa, mudança de regra) entram no <em>vento a favor</em>.</li>
+      <li>Escolher o veículo pelo objetivo é o <em>encaixe com o objetivo</em>.</li>
     </ul>
 
     <h2>Origens</h2>
     <p>O nome e o gráfico são de Alex Hormozi, no vídeo <a href="https://youtu.be/pwZJcLZc3_Y" target="_blank" rel="noopener noreferrer">"How To Make More Money Than You Deserve (My 2027 Framework)"</a> (publicado em novembro de 2026). Não achamos ninguém que tenha publicado antes este mesmo quadro — tipos de negócio em 5 veículos, dificuldade × dinheiro. As peças, porém, são mais antigas. Em ordem cronológica:</p>
     <ul>
-      <li><strong>1970 · Matriz crescimento-participação do BCG</strong> (Bruce Henderson) — o formato 2×2 que a carta ecoa; os eixos são outros.</li>
+      <li><strong>1970 · Matriz crescimento-participação do BCG</strong> (Bruce Henderson) — o formato 2×2 que o gráfico ecoa; os eixos são outros.</li>
       <li><strong>1973 · Israel Kirzner, <em>Competition and Entrepreneurship</em></strong> — o empreendedor alerta a desequilíbrios e arbitragens (Arbitragem).</li>
-      <li><strong>1979 · Michael Porter, "How Competitive Forces Shape Strategy"</strong> (HBR) e <em>Competitive Strategy</em> (1980) — barreiras de entrada e estrutura da indústria decidem a lucratividade (Commodities braçais × Fosso).</li>
-      <li><strong>1980 · Warren Buffett, carta aos acionistas</strong> — quando uma gestão brilhante encontra um negócio de economia ruim, é a reputação do negócio que fica intacta (Commodities braçais).</li>
-      <li><strong>1985 · Warren Buffett, carta aos acionistas</strong> — "um bom histórico gerencial é muito mais função do barco em que você entra do que de quão bem você rema". É a tese central.</li>
+      <li><strong>1979 · Michael Porter, "How Competitive Forces Shape Strategy"</strong> (HBR) e <em>Competitive Strategy</em> (1980) — barreiras de entrada e estrutura da indústria decidem a lucratividade (Commodity braçal × Fosso competitivo).</li>
+      <li><strong>1980 · Warren Buffett, carta aos acionistas</strong> — quando uma gestão brilhante encontra um negócio de economia ruim, é a reputação do negócio que fica intacta (Commodity braçal).</li>
+      <li><strong>1985 · Warren Buffett, carta aos acionistas</strong> — "um bom histórico gerencial é muito mais função do barco em que você entra do que de quão bem você rema". É a tese central, e o motivo do barco no gráfico.</li>
       <li><strong>1989 · Peter Lynch, <em>One Up on Wall Street</em></strong>, cap. 8 — a ação perfeita "soa chata", "faz algo desagradável", e "é difícil pensar numa indústria mais perfeita do que a de gestão de resíduos". É a raiz do desconto do "parece legal". Lynch fala de ações, não de abrir negócios; conferido no texto do livro.</li>
-      <li><strong>1999 · Buffett e o "fosso econômico"</strong> (Fortune; carta de 2007) — a vantagem durável que protege o lucro (Fosso).</li>
-      <li><strong>2003 · PICK chart</strong> (Lockheed Martin; Lean Six Sigma, Michael L. George) — uma 2×2 de facilidade × retorno cujos quadrantes batem com os 4 cantos da carta: Possible = fácil e pouco retorno, Implement = fácil e muito, Challenge = difícil e muito, Kill = difícil e pouco. Serve para priorizar projetos de melhoria, não para escolher negócios. Conferido na Wikipedia, que cita o livro de 2003.</li>
-      <li><strong>2010 · John Warrillow, <em>Built to Sell</em></strong> — negócio que depende do fundador não é vendável. É a lógica da âncora "depende de você", que substitui a zona do meio (o veículo 3 do vídeo). Warrillow escreve sobre tornar vendável uma empresa de serviço; usar isso como âncora na carta é adaptação nossa.</li>
-      <li><strong>2011 · MJ DeMarco, <em>The Millionaire Fastlane</em></strong> — cinco "mandamentos" (Controle, Entrada, Necessidade, Tempo, Escala; hoje conhecidos pela sigla CENTS). Entrada explica Commodities braçais e Caixa inicial; Tempo explica o limite de quem carrega a âncora. No livro de 2011 eles são capítulos; a sigla veio depois.</li>
+      <li><strong>1999 · Buffett e o "fosso econômico"</strong> (Fortune; carta de 2007) — a vantagem durável que protege o lucro (Fosso competitivo).</li>
+      <li><strong>2003 · PICK chart</strong> (Lockheed Martin; Lean Six Sigma, Michael L. George) — uma 2×2 de facilidade × retorno cujos quadrantes batem com os 4 cantos do gráfico: Possible = fácil e pouco retorno, Implement = fácil e muito, Challenge = difícil e muito, Kill = difícil e pouco. Serve para priorizar projetos de melhoria, não para escolher negócios. Conferido na Wikipedia, que cita o livro de 2003.</li>
+      <li><strong>2010 · John Warrillow, <em>Built to Sell</em></strong> — negócio que depende do fundador não é vendável. É a lógica da âncora "depende de você", que substitui a zona do meio (o veículo 3 do vídeo). Warrillow escreve sobre tornar vendável uma empresa de serviço; usar isso como âncora no gráfico é adaptação nossa.</li>
+      <li><strong>2011 · MJ DeMarco, <em>The Millionaire Fastlane</em></strong> — cinco "mandamentos" (Controle, Entrada, Necessidade, Tempo, Escala; hoje conhecidos pela sigla CENTS). Entrada explica Commodity braçal e Negócio de entrada; Tempo explica o limite de quem carrega a âncora. No livro de 2011 eles são capítulos; a sigla veio depois.</li>
       <li><strong>2014 · Peter Thiel, <em>Zero to One</em></strong> — "competição é para perdedores": prefira poucos concorrentes.</li>
       <li><strong>2018 · Naval Ravikant, "How to Get Rich (without getting lucky)"</strong> (thread de 31/05/2018) — "você não vai ficar rico alugando o seu tempo"; alavancagem de trabalho, capital e código e mídia, estas "sem permissão". É o ponto da "armadura do Homem de Ferro" do vídeo: mídia e produto soltam a âncora.</li>
       <li><strong>2021 · Alex Hormozi, <em>$100M Offers</em></strong> — a "multidão faminta", por trás do pivô "mude para um público mais velho e com dinheiro".</li>
       <li><strong>Elon Musk e o "idiot index"</strong> — para Musk é o custo de uma peça dividido pelo custo da matéria-prima. O vídeo só reaproveita o nome.</li>
       <li><strong>2026 · Alex Hormozi, o vídeo</strong> — a síntese: os 5 veículos, o teste do bilionário, o desconto do "parece legal" e "escolha o barco, depois reme forte". Aqui os veículos 1, 2, 4 e 5 viraram os quatro quadrantes e o veículo 3 virou a âncora.</li>
     </ul>
-    <p>As ligações entre essas fontes e a carta são interpretação educacional nossa. O relatório só pode citar essas fontes, e cada item mostra qual delas usou.</p>
+    <p>As ligações entre essas fontes e o gráfico são interpretação educacional nossa. O relatório só pode citar essas fontes, e cada item mostra qual delas usou.</p>
 
     <h2>Sua chave, sua conta (BYOK)</h2>
-    <p>A ferramenta usa a <strong>sua própria chave</strong> da OpenRouter. A chave fica salva só no seu navegador e vai direto do seu computador para a OpenRouter — nunca passa pelos nossos servidores. Uma avaliação usa duas chamadas ao modelo; cada pedido de sugestões, mais uma. Cada chamada custa centavos de dólar na sua conta. As ideias e o histórico ficam só no seu navegador. O ditado usa o reconhecimento de fala do próprio navegador.</p>
+    <p>A ferramenta usa a <strong>sua própria chave</strong> da OpenRouter. A chave fica salva só no seu navegador e vai direto do seu computador para a OpenRouter — nunca passa pelos nossos servidores. Uma avaliação usa duas chamadas ao modelo; cada pedido de sugestões, mais uma. O cálculo animado e o simulador não usam IA. Cada chamada custa centavos de dólar na sua conta. As ideias e o histórico ficam só no seu navegador. O ditado usa o reconhecimento de fala do próprio navegador.</p>
 
     <h2>Limites honestos</h2>
     <ul>

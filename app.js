@@ -45,31 +45,31 @@ const App = (function () {
     { k: 'ventos', axis: 'y', w: 0.14, label: 'Vento a favor (oferta × demanda)', hint: 'demanda crescendo mais que a oferta, mudança regulatória, público com dinheiro (10 = vento forte)' },
     { k: 'recorrencia', axis: 'y', w: 0.10, label: 'Recorrência e aderência', hint: 'cliente fica e paga de novo (10 = muito "grudento")' },
     { k: 'transferivel', axis: 'y', w: 0.10, label: 'Independência do fundador', hint: 'funciona e é vendável sem você (10 = totalmente independente; 4 ou menos = depende de você)' },
-    { k: 'concorrencia', axis: 'y', w: 0.08, label: 'Saturação da concorrência', hint: 'quantos já fazem igual (10 = saturado). Conta CONTRA o dinheiro.', inverse: true }
+    { k: 'concorrencia', axis: 'y', w: 0.08, label: 'Saturação da concorrência', hint: 'quantos já fazem igual (10 = saturado). Conta CONTRA o potencial financeiro.', inverse: true }
   ];
   var RKEYS = RUBRIC.map(function (r) { return r.k; });
 
   // ── The 4 quadrants (board) + the anchor badge ──
   var QUADS = {
-    arb: { nome: 'Arbitragem', eixo: 'fácil · muito dinheiro', hv: 5,
+    arb: { nome: 'Arbitragem', eixo: 'fácil · alto potencial financeiro', hv: 5,
       resumo: 'Demanda forte e pouca concorrência: vento a favor, oferta restrita ou mudança de regra.',
       dificil: 'Conseguir clientes e agir enquanto a janela está aberta.', dinheiro: 'Preço sustentado pela demanda e clientes que ficam.',
       armadilha: 'A janela fecha: quando todo mundo descobre, vira commodity.', serve: 'Fluxo de caixa, renda alta e valor de empresa (sem âncora).',
       exemplos: ['Med spa', 'Assessoria de patrimônio', 'Limpeza comercial', 'Manutenção de elevadores'], src: 'hormozi_video' },
-    fos: { nome: 'Fosso', eixo: 'difícil · muito dinheiro', hv: 4,
+    fos: { nome: 'Fosso competitivo', eixo: 'difícil · alto potencial financeiro', hv: 4,
       resumo: 'Barreiras de entrada protegem o lucro: habilidade, capital, regulação, tempo ou efeito de rede.',
       dificil: 'Capital, anos e equipe para atravessar a barreira.', dinheiro: 'Pouca concorrência depois que você está do lado de dentro.',
       armadilha: 'Ficar sem fôlego antes de chegar ao outro lado do fosso.', serve: 'Valor de empresa e bilhões; renda alta mais tarde.',
       exemplos: ['SaaS', 'Franquia', 'Marketplace', 'Farmacêutica'], src: 'buffett_fosso' },
-    cai: { nome: 'Caixa inicial', eixo: 'fácil · pouco dinheiro', hv: 2,
+    cai: { nome: 'Negócio de entrada', eixo: 'fácil · baixo potencial financeiro', hv: 2,
       resumo: 'Fácil de começar e de operar: uma pessoa chega a uma boa renda, raramente a uma empresa grande.',
-      dificil: 'Pouca coisa — o difícil é se destacar entre muitos.', dinheiro: 'Caixa rápido, aprendizado e capital para o próximo barco.',
+      dificil: 'Pouca coisa — o difícil é se destacar entre muitos.', dinheiro: 'Caixa rápido, aprendizado e capital para o próximo negócio.',
       armadilha: 'Ficar para sempre num negócio sem teto e sem fosso.', serve: 'Fluxo de caixa; aprender e juntar capital.',
       exemplos: ['Dropshipping', 'Serviços leves para casa', 'Máquinas de venda', 'Conteúdo de afiliado'], src: 'demarco' },
-    com: { nome: 'Commodities braçais', eixo: 'difícil · pouco dinheiro', hv: 1,
+    com: { nome: 'Commodity braçal', eixo: 'difícil · baixo potencial financeiro', hv: 1,
       resumo: 'Qualquer um entra: a concorrência espreme o preço e crescer exige mais gente.',
       dificil: 'Equipe, turnos, estoque e operação todo dia.', dinheiro: 'Margem fina e preço disputado.',
-      armadilha: 'Trabalhar mais para ganhar o mesmo: as mesmas habilidades renderiam mais em outro barco.', serve: 'Pouco — no máximo fluxo de caixa local.',
+      armadilha: 'Trabalhar mais para ganhar o mesmo: as mesmas habilidades renderiam mais em outro negócio.', serve: 'Pouco — no máximo fluxo de caixa local.',
       exemplos: ['Restaurante tradicional', 'Academia de serviço', 'Agência para pequenas empresas', 'Organização de eventos'], src: 'buffett_1980' }
   };
   var QORDER = ['arb', 'fos', 'cai', 'com'];
@@ -90,21 +90,21 @@ const App = (function () {
 
   // ── Original literature, in chronological order. `honest` = what is (and is not) claimed. ──
   var SOURCES = [
-    { id: 'bcg', year: 1970, short: 'BCG 1970', title: 'Bruce Henderson / BCG — matriz crescimento-participação (1970)', supports: 'O formato de matriz 2×2 para classificar negócios por dois eixos — a carta ecoa esse formato.', honest: 'Os eixos são outros (crescimento × participação de mercado); só a forma é herdada.', url: 'https://www.bcg.com/about/overview/our-history/growth-share-matrix' },
+    { id: 'bcg', year: 1970, short: 'BCG 1970', title: 'Bruce Henderson / BCG — matriz crescimento-participação (1970)', supports: 'O formato de matriz 2×2 para classificar negócios por dois eixos — o gráfico ecoa esse formato.', honest: 'Os eixos são outros (crescimento × participação de mercado); só a forma é herdada.', url: 'https://www.bcg.com/about/overview/our-history/growth-share-matrix' },
     { id: 'kirzner', year: 1973, short: 'Kirzner 1973', title: 'Israel M. Kirzner — Competition and Entrepreneurship (1973)', supports: 'O empreendedor como alguém alerta a desequilíbrios e oportunidades de arbitragem — a lógica do quadrante Arbitragem.', honest: 'Teoria econômica austríaca; a ligação com med spas e GLP-1 é aplicação nossa.', url: 'https://en.wikipedia.org/wiki/Israel_Kirzner' },
-    { id: 'porter', year: 1979, short: 'Porter 1979', title: 'Michael E. Porter — "How Competitive Forces Shape Strategy" (HBR, 1979) e Competitive Strategy (1980)', supports: 'Barreiras de entrada, rivalidade e a estrutura da indústria decidem a lucratividade — por que Commodities braçais sofre e Fosso lucra.', honest: 'Porter não fala em "Índice do Idiota"; a ponte entre as cinco forças e a carta é interpretação.', url: 'https://hbr.org/1979/03/how-competitive-forces-shape-strategy' },
-    { id: 'buffett_1980', year: 1980, short: 'Buffett 1980', title: 'Warren Buffett — carta aos acionistas da Berkshire Hathaway, 1980', supports: 'Quando uma gestão brilhante encontra um negócio de economia ruim, é a reputação do negócio que fica intacta — o limite de Commodities braçais.', honest: 'A frase é de Buffett; a aplicação a pequenos negócios é nossa leitura.', url: 'https://www.berkshirehathaway.com/letters/1980.html' },
+    { id: 'porter', year: 1979, short: 'Porter 1979', title: 'Michael E. Porter — "How Competitive Forces Shape Strategy" (HBR, 1979) e Competitive Strategy (1980)', supports: 'Barreiras de entrada, rivalidade e a estrutura da indústria decidem a lucratividade — por que Commodity braçal sofre e Fosso competitivo lucra.', honest: 'Porter não fala em "Índice do Idiota"; a ponte entre as cinco forças e o gráfico é interpretação.', url: 'https://hbr.org/1979/03/how-competitive-forces-shape-strategy' },
+    { id: 'buffett_1980', year: 1980, short: 'Buffett 1980', title: 'Warren Buffett — carta aos acionistas da Berkshire Hathaway, 1980', supports: 'Quando uma gestão brilhante encontra um negócio de economia ruim, é a reputação do negócio que fica intacta — o limite de Commodity braçal.', honest: 'A frase é de Buffett; a aplicação a pequenos negócios é nossa leitura.', url: 'https://www.berkshirehathaway.com/letters/1980.html' },
     { id: 'buffett_1985', year: 1985, short: 'Buffett 1985', title: 'Warren Buffett — carta aos acionistas da Berkshire Hathaway, 1985', supports: '"Um bom histórico gerencial é muito mais função do barco em que você entra do que de quão bem você rema" — o veículo importa mais que o esforço.', honest: 'A história do colega que foi para o aço é contada de memória no vídeo; a frase do barco está na carta de 1985.', url: 'https://www.berkshirehathaway.com/letters/1985.html' },
     { id: 'lynch', year: 1989, short: 'Lynch 1989', title: 'Peter Lynch — One Up on Wall Street (1989), cap. 8, "The Perfect Stock, What a Deal!"', supports: 'A ação perfeita "soa chata — ou, melhor ainda, ridícula", "faz algo desagradável", e "é difícil pensar numa indústria mais perfeita do que a de gestão de resíduos". É a raiz do desconto do "parece legal": o que ninguém quer fazer tem menos concorrência.', honest: 'Lynch fala de escolher ações, não de abrir negócios; a ponte com o quadrante Arbitragem é nossa. Conferido no texto do livro (copyright 1989).', url: 'https://www.simonandschuster.com/books/One-Up-On-Wall-Street/Peter-Lynch/9780743200400' },
-    { id: 'buffett_fosso', year: 1999, short: 'Fosso (Buffett)', title: 'Warren Buffett — o "fosso econômico" (Fortune, 1999; carta de 2007)', supports: 'A vantagem competitiva durável que protege os lucros — a base do quadrante Fosso.', honest: 'O vídeo lista os fossos (habilidade, capital, regulação, tempo, rede); o conceito de "moat" é de Buffett.', url: 'https://www.berkshirehathaway.com/letters/2007ltr.pdf' },
-    { id: 'pick', year: 2003, short: 'PICK 2003', title: 'PICK chart (Possible, Implement, Challenge, Kill) — Lockheed Martin; Lean Six Sigma (Michael L. George, 2003)', supports: 'Uma matriz 2×2 de facilidade de implementar × retorno. Os quadrantes batem com os da carta: Possible = Caixa inicial, Implement = Arbitragem, Challenge = Fosso, Kill = Commodities braçais.', honest: 'Serve para priorizar projetos de melhoria dentro de uma empresa, não para escolher negócios. Conferido na Wikipedia, que cita George, Lean Six Sigma for Service (2003); não conseguimos abrir o livro.', url: 'https://en.wikipedia.org/wiki/PICK_chart' },
-    { id: 'warrillow', year: 2010, short: 'Warrillow 2010', title: 'John Warrillow — Built to Sell (2010)', supports: 'Negócio que depende do fundador não é vendável. É a lógica da âncora "depende de você": renda alta, pouco valor de empresa — em qualquer quadrante.', honest: 'Warrillow escreve sobre tornar uma empresa de serviço vendável; não usa a carta. Transformar o "veículo 3" do vídeo em âncora é adaptação nossa.', url: 'https://en.wikipedia.org/wiki/Built_to_Sell' },
-    { id: 'demarco', year: 2011, short: 'DeMarco 2011', title: 'MJ DeMarco — The Millionaire Fastlane (2011), os cinco "mandamentos" (hoje conhecidos pela sigla CENTS)', supports: 'Controle, Entrada, Necessidade, Tempo e Escala. Entrada (se é fácil entrar, todo mundo entra) explica Caixa inicial e Commodities braçais; Tempo (o negócio precisa se desligar das suas horas) explica a âncora.', honest: 'No livro de 2011 eles são cinco capítulos ("The Commandment of Need / Entry / Control / Scale / Time"); a sigla CENTS veio depois. DeMarco não usa a carta.', url: 'https://www.thefastlaneforum.com/' },
+    { id: 'buffett_fosso', year: 1999, short: 'Fosso (Buffett)', title: 'Warren Buffett — o "fosso econômico" (Fortune, 1999; carta de 2007)', supports: 'A vantagem competitiva durável que protege os lucros — a base do quadrante Fosso competitivo.', honest: 'O vídeo lista os fossos (habilidade, capital, regulação, tempo, rede); o conceito de "moat" é de Buffett.', url: 'https://www.berkshirehathaway.com/letters/2007ltr.pdf' },
+    { id: 'pick', year: 2003, short: 'PICK 2003', title: 'PICK chart (Possible, Implement, Challenge, Kill) — Lockheed Martin; Lean Six Sigma (Michael L. George, 2003)', supports: 'Uma matriz 2×2 de facilidade de implementar × retorno. Os quadrantes batem com os do gráfico: Possible = Negócio de entrada, Implement = Arbitragem, Challenge = Fosso competitivo, Kill = Commodity braçal.', honest: 'Serve para priorizar projetos de melhoria dentro de uma empresa, não para escolher negócios. Conferido na Wikipedia, que cita George, Lean Six Sigma for Service (2003); não conseguimos abrir o livro.', url: 'https://en.wikipedia.org/wiki/PICK_chart' },
+    { id: 'warrillow', year: 2010, short: 'Warrillow 2010', title: 'John Warrillow — Built to Sell (2010)', supports: 'Negócio que depende do fundador não é vendável. É a lógica da âncora "depende de você": renda alta, pouco valor de empresa — em qualquer quadrante.', honest: 'Warrillow escreve sobre tornar uma empresa de serviço vendável; não usa o gráfico. Transformar o "veículo 3" do vídeo em âncora é adaptação nossa.', url: 'https://en.wikipedia.org/wiki/Built_to_Sell' },
+    { id: 'demarco', year: 2011, short: 'DeMarco 2011', title: 'MJ DeMarco — The Millionaire Fastlane (2011), os cinco "mandamentos" (hoje conhecidos pela sigla CENTS)', supports: 'Controle, Entrada, Necessidade, Tempo e Escala. Entrada (se é fácil entrar, todo mundo entra) explica Negócio de entrada e Commodity braçal; Tempo (o negócio precisa se desligar das suas horas) explica a âncora.', honest: 'No livro de 2011 eles são cinco capítulos ("The Commandment of Need / Entry / Control / Scale / Time"); a sigla CENTS veio depois. DeMarco não usa o gráfico.', url: 'https://www.thefastlaneforum.com/' },
     { id: 'thiel', year: 2014, short: 'Thiel 2014', title: 'Peter Thiel — Zero to One (2014)', supports: '"Competição é para perdedores": prefira mercados com poucos concorrentes — o mesmo raciocínio de "prefiro competir com 20 do que com 5 milhões".', honest: 'Thiel defende monopólios criativos; o vídeo chega a uma conclusão parecida pela via das barreiras.', url: 'https://en.wikipedia.org/wiki/Zero_to_One' },
-    { id: 'naval', year: 2018, short: 'Naval 2018', title: 'Naval Ravikant — "How to Get Rich (without getting lucky)", thread no Twitter (31/05/2018)', supports: '"Você não vai ficar rico alugando o seu tempo." Fortuna exige alavancagem: trabalho, capital e código e mídia — estas "sem permissão". Mídia e produto soltam a âncora do especialista.', honest: 'Data conferida no próprio tweet; frases conferidas em nav.al/rich, o site do autor. Naval fala de enriquecer em geral, não da carta.', url: 'https://nav.al/rich' },
+    { id: 'naval', year: 2018, short: 'Naval 2018', title: 'Naval Ravikant — "How to Get Rich (without getting lucky)", thread no Twitter (31/05/2018)', supports: '"Você não vai ficar rico alugando o seu tempo." Fortuna exige alavancagem: trabalho, capital e código e mídia — estas "sem permissão". Mídia e produto soltam a âncora do especialista.', honest: 'Data conferida no próprio tweet; frases conferidas em nav.al/rich, o site do autor. Naval fala de enriquecer em geral, não do gráfico.', url: 'https://nav.al/rich' },
     { id: 'hormozi_offers', year: 2021, short: '$100M Offers', title: 'Alex Hormozi — $100M Offers (2021), a "multidão faminta"', supports: 'Escolha de mercado: dor intensa, poder de compra, fácil de alcançar e crescendo — por isso "mude para um público mais velho e com dinheiro" é um pivô recorrente.', honest: 'Livro do próprio Hormozi, anterior ao vídeo.', url: 'https://www.acquisition.com/books' },
     { id: 'musk', year: 2022, short: 'Musk', title: 'Elon Musk — o "idiot index" original', supports: 'O nome: para Musk, idiot index é o custo de uma peça dividido pelo custo da matéria-prima. O vídeo reaproveita o nome para outra ideia.', honest: 'São conceitos diferentes; só o rótulo foi emprestado. O termo circula em falas de Musk, sem uma publicação única de origem.', url: 'https://en.wikipedia.org/wiki/Elon_Musk' },
-    { id: 'hormozi_video', year: 2026, short: 'Hormozi 2026', title: 'Alex Hormozi — "How To Make More Money Than You Deserve (My 2027 Framework)" (YouTube, nov. 2026)', supports: 'Os 5 veículos (dificuldade × dinheiro) e seus exemplos, o teste do bilionário ("como é isso no máximo?"), o desconto do "parece legal" e o fechamento: escolha o veículo pelo objetivo, depois reme forte.', honest: 'Não achamos ninguém que tenha publicado antes este mesmo quadro: as peças são mais antigas — veja acima —, mas a síntese é dele. Aqui os veículos 1, 2, 4 e 5 viram os quatro quadrantes e o veículo 3 vira a âncora. Baseado no que ele viu em mais de 10 mil negócios; não é pesquisa acadêmica.', url: 'https://youtu.be/pwZJcLZc3_Y' }
+    { id: 'hormozi_video', year: 2026, short: 'Hormozi 2026', title: 'Alex Hormozi — "How To Make More Money Than You Deserve (My 2027 Framework)" (YouTube, nov. 2026)', supports: 'Os 5 veículos (dificuldade de operação × potencial financeiro) e seus exemplos, o teste do bilionário ("como é isso no máximo?"), o desconto do "parece legal" e o fechamento: escolha o veículo pelo objetivo, depois reme forte.', honest: 'Não achamos ninguém que tenha publicado antes este mesmo quadro: as peças são mais antigas — veja acima —, mas a síntese é dele. Aqui os veículos 1, 2, 4 e 5 viram os quatro quadrantes e o veículo 3 vira a âncora. Baseado no que ele viu em mais de 10 mil negócios; não é pesquisa acadêmica.', url: 'https://youtu.be/pwZJcLZc3_Y' }
   ];
   var SOURCE_IDS = SOURCES.map(function (s) { return s.id; });
   function sourceById(id) { for (var i = 0; i < SOURCES.length; i++) if (SOURCES[i].id === id) return SOURCES[i]; return sourceById('hormozi_video'); }
@@ -150,10 +150,10 @@ const App = (function () {
 
   // Secondary / keyboard fallback for choosing a destination
   var CHIPS = {
-    up: { label: '↑ mais dinheiro', at: function (c) { return [c.x, Math.min(96, c.y + 25)]; } },
+    up: { label: '↑ mais potencial financeiro', short: '↑ mais potencial', at: function (c) { return [c.x, Math.min(96, c.y + 25)]; } },
     left: { label: '← mais fácil', at: function (c) { return [Math.max(4, c.x - 25), c.y]; } },
     arb: { label: '↖ Arbitragem', at: function (c) { return [clamp(Math.min(c.x - 12, 30), 4, 96), clamp(Math.max(c.y + 12, 70), 4, 96)]; } },
-    fos: { label: '↗ Fosso', at: function (c) { return [clamp(Math.max(c.x + 8, 70), 4, 96), clamp(Math.max(c.y + 12, 70), 4, 96)]; } }
+    fos: { label: '↗ Fosso competitivo', at: function (c) { return [clamp(Math.max(c.x + 8, 70), 4, 96), clamp(Math.max(c.y + 12, 70), 4, 96)]; } }
   };
 
   var state = { cur: null, wired: false, busy: false, sugBusy: false, rec: null, recBtn: null, goal: 'renda', tab: 'diag', chartMode: 'diag', g: null,
@@ -211,7 +211,7 @@ const App = (function () {
   function anchorOf(rub) { return !!(rub && rub.transferivel && rub.transferivel.nota <= ANCHOR_MAX); }
   function boundary(x, y) {
     var nx = Math.abs(x - 50) <= EDGE, ny = Math.abs(y - 50) <= EDGE;
-    if (nx && ny) return 'no centro da carta, na fronteira entre os quatro quadrantes';
+    if (nx && ny) return 'no centro do gráfico, na fronteira entre os quatro quadrantes';
     if (nx) { var top = y >= 50; return 'na fronteira entre ' + QUADS[top ? 'arb' : 'cai'].nome + ' e ' + QUADS[top ? 'fos' : 'com'].nome; }
     if (ny) { var left = x < 50; return 'na fronteira entre ' + QUADS[left ? 'cai' : 'com'].nome + ' e ' + QUADS[left ? 'arb' : 'fos'].nome; }
     return '';
@@ -253,9 +253,9 @@ const App = (function () {
   // Every SVG font size is >= 18 user units (Arthur's browser has an 18 px
   // minimum font size; smaller sizes would be inflated and collide).
   function geom(mode, hostW) {
-    if (mode === 'export') return { W: 1000, H: 640, L: 70, R: 978, T: 16, B: 580, compact: false, fz: { zone: 26, axis: 22, idea: 21, num: 18, ro: 20 }, r: { boat: 22, dot: 15, ex: 7, buoy: 14 } };
-    if (hostW && hostW < 600) return { W: 560, H: 604, L: 44, R: 550, T: 12, B: 550, compact: true, fz: { zone: 24, axis: 21, idea: 21, num: 18, ro: 20 }, r: { boat: 21, dot: 15, ex: 8, buoy: 15 } };
-    return { W: 1000, H: 624, L: 66, R: 984, T: 14, B: 568, compact: false, fz: { zone: 26, axis: 22, idea: 21, num: 18, ro: 20 }, r: { boat: 22, dot: 15, ex: 7, buoy: 14 } };
+    if (mode === 'export') return { W: 1000, H: 676, L: 104, R: 970, T: 16, B: 584, compact: false, fz: { zone: 26, axis: 22, idea: 21, num: 18, ro: 20 }, r: { boat: 22, dot: 15, ex: 7, buoy: 14 } };
+    if (hostW && hostW < 600) return { W: 560, H: 652, L: 94, R: 538, T: 14, B: 560, compact: true, fz: { zone: 24, axis: 21, idea: 21, num: 18, ro: 20 }, r: { boat: 21, dot: 15, ex: 8, buoy: 15 } };
+    return { W: 1000, H: 664, L: 104, R: 974, T: 14, B: 572, compact: false, fz: { zone: 26, axis: 22, idea: 21, num: 18, ro: 20 }, r: { boat: 22, dot: 15, ex: 7, buoy: 14 } };
   }
   function pxf(g) { return function (x) { return g.L + (x / 100) * (g.R - g.L); }; }
   function pyf(g) { return function (y) { return g.B - (y / 100) * (g.B - g.T); }; }
@@ -266,7 +266,7 @@ const App = (function () {
     if (q === 'cai') return { x: g.L, y: my, w: mx - g.L, h: g.B - my };
     return { x: mx, y: my, w: g.R - mx, h: g.B - my };
   }
-  var QFILL = { arb: '#c4e2dc', fos: '#a9cbd8', cai: '#d6e6ec', com: '#ece0bf' };
+  var QFILL = { arb: '#dcefeb', fos: '#cfe2ea', cai: '#e8f0f3', com: '#f4ecd6' };
 
   function markersFor(cur, mode) {
     if (!cur) return [];
@@ -310,10 +310,28 @@ const App = (function () {
       '<circle cy="-6" r="1.3" fill="none" stroke="#fffdf7" stroke-width="1.2"/></g>';
   }
 
+  function boatInner(cx, cy, r, anchor) {
+    var k = r / 22;
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#fffdf7" fill-opacity=".55" stroke="#b5246b" stroke-width="2.6"/>' +
+      '<g transform="translate(' + cx + ' ' + cy + ') scale(' + k + ')"><path d="M-13 3h26l-5 7h-16z" fill="#14284a"/><path d="M0 -15v18" stroke="#14284a" stroke-width="2"/><path d="M1.5 -13l10 14h-10z" fill="#b5246b"/><path d="M-1.5 -10l-7 11h7z" fill="#fffdf7" stroke="#14284a" stroke-width="1"/></g>' +
+      (anchor ? anchorGlyph(cx + r * 0.78, cy + r * 0.78, 10) : '');
+  }
+  // Dashed projections from the boat to both axes, each ending in a badge with the value on that axis (v4)
+  function projSVG(g, xv, yv) {
+    var px = pxf(g), py = pyf(g), bx = px(xv), by = py(yv), cw = g.fz.num * 0.62, wX = String(xv).length * cw + 16, wY = String(yv).length * cw + 16;
+    var t = 'font-family="Menlo,Consolas,monospace" font-size="' + g.fz.num + '" font-weight="700" fill="#ffffff" text-anchor="middle"';
+    return '<g class="proj">' +
+      '<line x1="' + bx + '" y1="' + by + '" x2="' + bx + '" y2="' + g.B + '" stroke="#b5246b" stroke-width="1.4" stroke-dasharray="4 4" opacity=".6"/>' +
+      '<line x1="' + bx + '" y1="' + by + '" x2="' + g.L + '" y2="' + by + '" stroke="#b5246b" stroke-width="1.4" stroke-dasharray="4 4" opacity=".6"/>' +
+      '<rect class="pbx" x="' + (bx - wX / 2) + '" y="' + (g.B + 10) + '" width="' + wX + '" height="26" rx="5" fill="#b5246b"/>' +
+      '<text class="pvx" x="' + bx + '" y="' + (g.B + 29) + '" ' + t + '>' + xv + '</text>' +
+      '<rect class="pby" x="' + (g.L - 8 - wY) + '" y="' + (by - 13) + '" width="' + wY + '" height="26" rx="5" fill="#b5246b"/>' +
+      '<text class="pvy" x="' + (g.L - 8 - wY / 2) + '" y="' + (by + g.fz.num * 0.35) + '" ' + t + '>' + yv + '</text></g>';
+  }
   function buildSVG(g, o) {
     var px = pxf(g), py = pyf(g), cur = o.cur, p = o.idp;
     var mx = px(50), my = py(50), s = [];
-    s.push('<svg xmlns="' + SVGNS + '" viewBox="0 0 ' + g.W + ' ' + g.H + '" class="chart-svg" role="img" aria-label="Carta com quatro quadrantes: dificuldade de operar no eixo horizontal, potencial de dinheiro no eixo vertical">');
+    s.push('<svg xmlns="' + SVGNS + '" viewBox="0 0 ' + g.W + ' ' + g.H + '" class="chart-svg" role="img" aria-label="Gráfico x,y de 0 a 100: dificuldade de operação no eixo horizontal, potencial financeiro no eixo vertical' + (cur ? '; a ideia está em dificuldade ' + cur.x + ' e potencial financeiro ' + cur.y + ', em ' + esc(QUADS[quad(cur.x, cur.y)].nome) : '') + '">');
     s.push('<defs><clipPath id="' + p + '-clip"><rect x="' + g.L + '" y="' + g.T + '" width="' + (g.R - g.L) + '" height="' + (g.B - g.T) + '"/></clipPath>' +
       '<marker id="' + p + '-ar-t" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0f6b6b"/></marker>' +
       '<marker id="' + p + '-ar-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7a8494"/></marker></defs>');
@@ -322,9 +340,26 @@ const App = (function () {
     s.push('<g class="qhl">');
     QORDER.forEach(function (q) { var r = quadRect(g, q); s.push('<rect class="qhl-r" data-q="' + q + '" x="' + r.x + '" y="' + r.y + '" width="' + r.w + '" height="' + r.h + '"/>'); });
     s.push('</g>');
+    [25, 75].forEach(function (v) {   // light grid at 25 and 75; the 50 lines stay the zone borders
+      s.push('<line x1="' + px(v) + '" y1="' + g.T + '" x2="' + px(v) + '" y2="' + g.B + '" stroke="#14284a" stroke-width="1" opacity=".1"/>');
+      s.push('<line x1="' + g.L + '" y1="' + py(v) + '" x2="' + g.R + '" y2="' + py(v) + '" stroke="#14284a" stroke-width="1" opacity=".1"/>');
+    });
     s.push('<line x1="' + mx + '" y1="' + g.T + '" x2="' + mx + '" y2="' + g.B + '" stroke="#14284a" stroke-width="1" opacity=".35"/>');
     s.push('<line x1="' + g.L + '" y1="' + my + '" x2="' + g.R + '" y2="' + my + '" stroke="#14284a" stroke-width="1" opacity=".35"/>');
     s.push('<rect x="' + g.L + '" y="' + g.T + '" width="' + (g.R - g.L) + '" height="' + (g.B - g.T) + '" fill="none" stroke="#14284a" stroke-width="1.5"/>');
+    // v4: a real x,y plane — ticks and numbers 0–100; the boat's own values take the place of the tick labels they would cover
+    var fzN = g.fz.num, cw = fzN * 0.62;
+    s.push('<g class="axes" font-family="Menlo,Consolas,monospace" font-size="' + fzN + '" fill="#4a5a74">');
+    [0, 25, 50, 75, 100].forEach(function (v) {
+      var xv = px(v), yv = py(v), lw = String(v).length * cw;
+      s.push('<line x1="' + xv + '" y1="' + g.B + '" x2="' + xv + '" y2="' + (g.B + 6) + '" stroke="#14284a" stroke-width="1.2"/><line x1="' + (g.L - 6) + '" y1="' + yv + '" x2="' + g.L + '" y2="' + yv + '" stroke="#14284a" stroke-width="1.2"/>');
+      var hideX = cur && Math.abs(xv - px(cur.x)) < (String(cur.x).length * cw + 16) / 2 + lw / 2 + 4;
+      var hideY = cur && Math.abs(yv - py(cur.y)) < 13 + fzN * 0.45 + 3;
+      if (!hideX) s.push('<text class="tk tkx" x="' + xv + '" y="' + (g.B + 29) + '" text-anchor="middle">' + v + '</text>');
+      if (!hideY) s.push('<text class="tk tky" x="' + (g.L - 12) + '" y="' + (yv + fzN * 0.35) + '" text-anchor="end">' + v + '</text>');
+    });
+    s.push('</g>');
+    if (cur) s.push(projSVG(g, cur.x, cur.y));
     var marks = cur ? spreadDots(g, cur, markersFor(cur, o.mode)) : [];
     o.circles = []; o.segs = [];
     if (cur) {
@@ -364,12 +399,14 @@ const App = (function () {
       s.push('</g>');
     }
     if (cur) {
-      var bx2 = px(cur.x), by2 = py(cur.y), r = g.r.boat, k = r / 22;
-      s.push('<g class="boat">' +
-        '<circle cx="' + bx2 + '" cy="' + by2 + '" r="' + r + '" fill="#fffdf7" fill-opacity=".55" stroke="#b5246b" stroke-width="2.6"/>' +
-        '<g transform="translate(' + bx2 + ' ' + by2 + ') scale(' + k + ')"><path d="M-13 3h26l-5 7h-16z" fill="#14284a"/><path d="M0 -15v18" stroke="#14284a" stroke-width="2"/><path d="M1.5 -13l10 14h-10z" fill="#b5246b"/><path d="M-1.5 -10l-7 11h7z" fill="#fffdf7" stroke="#14284a" stroke-width="1"/></g>' +
-        (cur.anchor ? anchorGlyph(bx2 + r * 0.78, by2 + r * 0.78, 10) : '') +
-        '</g>');
+      var bx2 = px(cur.x), by2 = py(cur.y), r = g.r.boat;
+      if (o.ghost) {   // simulation: the AI's position stays as a ghost, with a thin line to the simulated boat
+        var gx = px(o.ghost.x), gy = py(o.ghost.y);
+        s.push('<line class="sim-link" x1="' + gx + '" y1="' + gy + '" x2="' + bx2 + '" y2="' + by2 + '" stroke="#14284a" stroke-width="1.6" opacity=".55"/>');
+        s.push('<g class="boat-ghost" opacity=".38">' + boatInner(gx, gy, r, o.ghost.anchor) + '</g>');
+        o.circles.push({ cx: gx, cy: gy, r: r });
+      }
+      s.push('<g class="boat">' + boatInner(bx2, by2, r, cur.anchor) + '</g>');
       o.circles.push({ cx: bx2, cy: by2, r: r + (cur.anchor ? 8 : 0) });
       if (o.target) {
         var tx = px(o.target.x), ty = py(o.target.y);
@@ -382,9 +419,14 @@ const App = (function () {
     QORDER.forEach(function (q) {
       s.push('<text class="zl" data-q="' + q + '" font-size="' + g.fz.zone + '" font-style="italic" font-weight="700" stroke="#fffdf7" stroke-opacity=".85" stroke-width="6" stroke-linejoin="round" paint-order="stroke" x="0" y="0">' + esc(QUADS[q].nome) + '</text>');
     });
-    var axY = g.B + (g.compact ? 34 : 38);
-    s.push('<text class="ax" x="' + ((g.L + g.R) / 2) + '" y="' + axY + '" text-anchor="middle" font-size="' + g.fz.axis + '" font-style="italic" fill="#2e4366">fácil ← Dificuldade de operar → difícil</text>');
-    s.push('<text class="ax" transform="translate(' + (g.L - 16) + ' ' + ((g.T + g.B) / 2) + ') rotate(-90)" text-anchor="middle" font-size="' + g.fz.axis + '" font-style="italic" fill="#2e4366">pouco ← Potencial de dinheiro → muito</text>');
+    var axY = g.B + 66, axX = g.L - 58;   // axis titles: "fácil … difícil" and "baixo … alto" at the ends
+    s.push('<g class="ax" font-size="' + g.fz.axis + '" font-style="italic" fill="#2e4366">' +
+      '<text x="' + px(0) + '" y="' + axY + '" text-anchor="start">fácil</text>' +
+      '<text x="' + px(50) + '" y="' + axY + '" text-anchor="middle" font-weight="700">Dificuldade de operação</text>' +
+      '<text x="' + px(100) + '" y="' + axY + '" text-anchor="end">difícil</text>' +
+      '<text transform="translate(' + axX + ' ' + py(0) + ') rotate(-90)" text-anchor="start">baixo</text>' +
+      '<text transform="translate(' + axX + ' ' + py(50) + ') rotate(-90)" text-anchor="middle" font-weight="700">Potencial financeiro</text>' +
+      '<text transform="translate(' + axX + ' ' + py(100) + ') rotate(-90)" text-anchor="end">alto</text></g>');
     s.push('</g>');
     s.push('<g class="idea-tag"></g>');
     s.push('<g class="ex-dots"></g>');
@@ -484,7 +526,7 @@ const App = (function () {
     var rect = document.createElementNS(SVGNS, 'rect');
     var txt2 = document.createElementNS(SVGNS, 'text');
     txt2.setAttribute('font-family', 'Georgia,serif'); txt2.setAttribute('font-style', 'italic'); txt2.setAttribute('font-weight', '700');
-    txt2.setAttribute('font-size', g.fz.idea); txt2.setAttribute('fill', '#fffdf7'); txt2.textContent = 'Sua ideia';
+    txt2.setAttribute('font-size', g.fz.idea); txt2.setAttribute('fill', '#fffdf7'); txt2.textContent = o.tagText || 'Sua ideia';
     tagG.appendChild(rect); tagG.appendChild(txt2);
     txt2.setAttribute('x', 0); txt2.setAttribute('y', 0);
     var tb = bboxOf(txt2), w = tb.w + 18, h2 = g.fz.idea + 12;
@@ -519,9 +561,11 @@ const App = (function () {
   }
 
   // ── Destination (drag / keyboard / chips) ────────────────────────────────
+  function deltaText(from, to) { return signed(to.y - from.y) + ' potencial · ' + signed(to.x - from.x) + ' dificuldade'; }
+  function absText(p) { return 'dificuldade ' + p.x + ' · potencial ' + p.y + ' · ' + QUADS[quad(p.x, p.y)].nome; }
   function destText(cur, t) {
     t = t || cur.target; if (!t) return '';
-    return signed(t.y - cur.y) + ' dinheiro · ' + signed(t.x - cur.x) + ' dificuldade · ' + QUADS[quad(t.x, t.y)].nome;
+    return absText(t) + ' (' + deltaText(cur, t) + ')';
   }
   function ensureDest(svg, g) {
     var d = svg.querySelector('.dest'); if (!d) return null;
@@ -537,7 +581,7 @@ const App = (function () {
     return d;
   }
   function drawDest(svg, g, x, y, live) {
-    var cur = state.cur; if (!svg || !g || !cur) return;
+    var cur = state.simCur || state.cur; if (!svg || !g || !cur) return;
     var d = ensureDest(svg, g); if (!d) return;
     var px = pxf(g), py = pyf(g), bx = px(cur.x), by = py(cur.y), tx = px(x), ty = py(y);
     var route = d.querySelector('.route'), buoy = d.querySelector('.buoy'), ro = d.querySelector('.readout');
@@ -549,9 +593,11 @@ const App = (function () {
     buoy.setAttribute('transform', 'translate(' + tx + ' ' + ty + ')');
     if (!live) { ro.setAttribute('visibility', 'hidden'); return; }
     var t1 = ro.querySelector('.ro1'), t2 = ro.querySelector('.ro2'), rect = ro.querySelector('rect');
-    var near = nearestExamples(x, y).slice(0, 2).map(function (e) { return cut(e.t, 24); });
-    t1.textContent = destText(cur, { x: Math.round(x), y: Math.round(y) });
-    t2.textContent = near.length ? 'perto: ' + near.join(' · ') : '';
+    var tp = { x: Math.round(x), y: Math.round(y) };
+    // absolute position first, then the difference (v4); the compact chart splits the first line
+    t1.textContent = g.compact ? 'Destino: ' + QUADS[quad(tp.x, tp.y)].nome : 'Destino: ' + absText(tp);
+    t2.textContent = g.compact ? 'dificuldade ' + tp.x + ' · potencial ' + tp.y + ' · ' + deltaText(cur, tp) : deltaText(cur, tp);
+    if (g.compact) t2.textContent = 'dif. ' + tp.x + ' · pot. ' + tp.y + ' (' + deltaText(cur, tp).replace(' potencial', ' pot.').replace(' dificuldade', ' dif.') + ')';
     t1.setAttribute('x', 0); t1.setAttribute('y', 0); t2.setAttribute('x', 0); t2.setAttribute('y', g.fz.ro * 1.2);
     var b1 = bboxOf(t1), b2 = bboxOf(t2), w = Math.max(b1.w, b2.w) + 20, h = g.fz.ro * 2.4 + 14;
     var off = g.r.buoy + 10, spots = [[tx + off, ty - off - h], [tx - off - w, ty - off - h], [tx + off, ty + off], [tx - off - w, ty + off]];
@@ -570,7 +616,7 @@ const App = (function () {
     if (!svg) return;
     Array.prototype.forEach.call(svg.querySelectorAll('.qhl-r'), function (r) { r.classList.toggle('on', r.getAttribute('data-q') === q); });
   }
-  function canDrag() { return !!state.cur && !$('result').hidden && !state.busy; }
+  function canDrag() { return !!state.cur && !$('result').hidden && !state.busy && !state.sim && !calc.on; }
   function startDrag() {
     var svg = $('chart-host').querySelector('svg'); if (!svg) return;
     hideLens(true); closeCard(false);
@@ -676,7 +722,7 @@ const App = (function () {
     if (k === 'Enter') {
       e.preventDefault();
       if (drag.kbd) { drag.kbd = false; endDrag(true); }
-      if (state.cur.target) suggest(); else toast('Use as setas para escolher um destino na carta.');
+      if (state.cur.target) suggest(); else toast('Use as setas para escolher um destino no gráfico.');
     }
   }
   function setTargetFromChip(key) {
@@ -685,16 +731,217 @@ const App = (function () {
     commitTarget(at[0], at[1]);
   }
 
+  // ── v4: "Como o ponto foi calculado" — the sum, animated ─────────────────
+  // Points of a criterion = nota/10 × its maximum (exactly nota × peso × 10); each axis sums to 100.
+  var CALC_ORDER = ['trabalho', 'habilidade', 'capital', 'operacao', 'regulacao', 'tempo', 'teto', 'escala', 'fosso', 'ventos', 'margem', 'recorrencia', 'transferivel', 'concorrencia'];
+  function rubricDef(k) { for (var i = 0; i < RUBRIC.length; i++) if (RUBRIC[i].k === k) return RUBRIC[i]; return null; }
+  function critPts(r, nota) { return (r.inverse ? (10 - nota) : nota) * r.w * 10; }
+  function maxPts(r) { return Math.round(r.w * 100); }
+  function fmt1(v) { var a = Math.round(Math.abs(v) * 10) / 10; return (a === 0 ? '±' : (v < 0 ? '−' : '+')) + String(a).replace('.', ','); }
+  function legalAdjOf(n) { return -(clamp(num(n, 5), 0, 10) - 5) * 0.6; }
+  function calcSteps(rub, legalNota) {
+    var steps = [], x = 0, y = 0;
+    CALC_ORDER.forEach(function (k) {
+      var r = rubricDef(k), n = rub[k].nota, pts = critPts(r, n);
+      if (r.axis === 'x') x += pts; else y += pts;
+      steps.push({ k: k, axis: r.axis, x: x, y: y, pts: pts, l1: r.label + ' · nota ' + n + ' de 10', l2: fmt1(pts) + ' (vale até ' + maxPts(r) + ')' + (r.inverse ? ' · conta contra' : '') });
+    });
+    var adj = legalAdjOf(legalNota); y += adj;
+    steps.push({ k: 'legal', axis: 'y', x: x, y: y, pts: adj, l1: 'Desconto do "parece legal" · nota ' + legalNota + ' de 10', l2: fmt1(adj) + ' (até ±3)' });
+    return steps;
+  }
+  var calc = { on: false, raf: 0, steps: null, i: -1, t0: 0, from: null, to: null, phase: '', svg: null, capBottom: false };
+  var STEP_MS = 360, MOVE_MS = 250, END_MS = 1100;   // 15 steps + the end ≈ 6,5 s
+  function svgEl(tag, attrs, parent) { var el = document.createElementNS(SVGNS, tag); Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); }); if (parent) parent.appendChild(el); return el; }
+  function playCalc(fromButton) {
+    var cur = state.cur, svg = $('chart-host').querySelector('svg'), g = state.g;
+    if (!cur || !cur.rubric || !svg || !g) return;
+    if (calc.on) { stopCalc(true); return; }
+    if (state.sim) simClose();
+    if (reducedMotion()) { if (fromButton) openConta(); return; }   // reduced motion: the final state, no animation
+    svg = $('chart-host').querySelector('svg');
+    hideLens(true); closeCard(false);
+    var L = svgEl('g', { 'class': 'calc' }, svg), fz = g.fz.num;
+    svgEl('g', { 'class': 'calc-trail' }, L);
+    svgEl('line', { 'class': 'calc-p cpx', stroke: '#b5246b', 'stroke-width': 1.4, 'stroke-dasharray': '4 4', opacity: '.6' }, L);
+    svgEl('line', { 'class': 'calc-p cpy', stroke: '#b5246b', 'stroke-width': 1.4, 'stroke-dasharray': '4 4', opacity: '.6' }, L);
+    ['cbx', 'cby'].forEach(function (c) { var gb = svgEl('g', { 'class': c }, L); svgEl('rect', { rx: 5, height: 26, fill: '#b5246b' }, gb); svgEl('text', { 'text-anchor': 'middle', 'font-family': 'Menlo,Consolas,monospace', 'font-weight': 700, 'font-size': fz, fill: '#ffffff' }, gb); });
+    var boat = svgEl('g', { 'class': 'calc-boat' }, L); boat.innerHTML = boatInner(0, 0, g.r.boat, false);
+    var cap = svgEl('g', { 'class': 'calc-cap' }, L);
+    svgEl('rect', { rx: 6, fill: '#14284a', opacity: '.94' }, cap);
+    svgEl('text', { 'class': 'cc1', 'font-family': 'Georgia,serif', 'font-weight': 700, 'font-size': g.fz.ro, fill: '#fffdf7' }, cap);
+    svgEl('text', { 'class': 'cc2', 'font-family': 'Georgia,serif', 'font-style': 'italic', 'font-size': g.fz.ro, fill: '#f4c9dc' }, cap);
+    svg.classList.add('calc-on');
+    calc.on = true; calc.svg = svg; calc.steps = calcSteps(cur.rubric, cur.legal.nota); calc.i = -1; calc.to = { x: 0, y: 0 }; calc.capBottom = cur.y >= 55;
+    $('boat-handle').hidden = true; $('dest-go').hidden = true;
+    var b = $('calc-btn'); if (b) { b.hidden = false; b.textContent = '■ Pular para o fim'; }
+    calcPlace(0, 0);
+    calcNext(performance.now());
+    calc.raf = requestAnimationFrame(calcTick);
+  }
+  function calcNext(now) {
+    var cur = state.cur, g = state.g;
+    calc.i++;
+    calc.from = { x: calc.to.x, y: calc.to.y };
+    calc.t0 = now;
+    if (calc.i < calc.steps.length) {
+      var st = calc.steps[calc.i];
+      calc.to = { x: st.x, y: st.y }; calc.phase = 'step';
+      calcCaption(st.l1, st.l2);
+      var tr = calc.svg.querySelector('.calc-trail'), px = pxf(g), py = pyf(g);
+      svgEl('line', { 'class': 'calc-seg' + (calc.i % 2 ? ' alt' : ''), x1: px(calc.from.x), y1: py(calc.from.y), x2: px(st.x), y2: py(st.y) }, tr);
+    } else {
+      calc.to = { x: cur.x, y: cur.y }; calc.phase = 'end';
+      var bnd = boundary(cur.x, cur.y);
+      calcCaption('cai em ' + QUADS[cur.q].nome + (cur.anchor ? ' · ⚓ depende de você' : ''), bnd ? 'Fica ' + bnd : 'Dificuldade ' + cur.x + ' · Potencial financeiro ' + cur.y);
+      setQHL(calc.svg, cur.q);
+      if (cur.anchor) calc.svg.querySelector('.calc-boat').insertAdjacentHTML('beforeend', '<g class="calc-anchor">' + anchorGlyph(g.r.boat * 0.78, g.r.boat * 0.78, 10) + '</g>');
+    }
+  }
+  function calcTick(now) {
+    if (!calc.on) return;
+    var t = now - calc.t0, u = Math.min(1, t / (calc.phase === 'end' ? 260 : MOVE_MS)), e = 1 - Math.pow(1 - u, 3);
+    calcPlace(calc.from.x + (calc.to.x - calc.from.x) * e, calc.from.y + (calc.to.y - calc.from.y) * e);
+    if (t >= (calc.phase === 'end' ? END_MS : STEP_MS)) { if (calc.phase === 'end') { stopCalc(true); return; } calcNext(now); }
+    calc.raf = requestAnimationFrame(calcTick);
+  }
+  function calcPlace(x, y) {
+    var g = state.g, svg = calc.svg; if (!svg || !g) return;
+    var px = pxf(g), py = pyf(g), bx = px(x), by = py(y), cw = g.fz.num * 0.62, vx = Math.round(x), vy = Math.round(y);
+    svg.querySelector('.calc-boat').setAttribute('transform', 'translate(' + bx + ' ' + by + ')');
+    var lx = svg.querySelector('.cpx'), ly = svg.querySelector('.cpy');
+    lx.setAttribute('x1', bx); lx.setAttribute('y1', by); lx.setAttribute('x2', bx); lx.setAttribute('y2', g.B);
+    ly.setAttribute('x1', bx); ly.setAttribute('y1', by); ly.setAttribute('x2', g.L); ly.setAttribute('y2', by);
+    var wX = String(vx).length * cw + 16, wY = String(vy).length * cw + 16;
+    var gx = svg.querySelector('.cbx'), gy = svg.querySelector('.cby');
+    gx.querySelector('rect').setAttribute('x', bx - wX / 2); gx.querySelector('rect').setAttribute('y', g.B + 10); gx.querySelector('rect').setAttribute('width', wX);
+    gx.querySelector('text').setAttribute('x', bx); gx.querySelector('text').setAttribute('y', g.B + 29); gx.querySelector('text').textContent = vx;
+    gy.querySelector('rect').setAttribute('x', g.L - 8 - wY); gy.querySelector('rect').setAttribute('y', by - 13); gy.querySelector('rect').setAttribute('width', wY);
+    gy.querySelector('text').setAttribute('x', g.L - 8 - wY / 2); gy.querySelector('text').setAttribute('y', by + g.fz.num * 0.35); gy.querySelector('text').textContent = vy;
+  }
+  function calcCaption(l1, l2) {
+    var g = state.g, cap = calc.svg.querySelector('.calc-cap'), t1 = cap.querySelector('.cc1'), t2 = cap.querySelector('.cc2'), rect = cap.querySelector('rect');
+    t1.textContent = l1; t2.textContent = l2;
+    t1.setAttribute('x', 0); t2.setAttribute('x', 0);
+    var fz = g.fz.ro, maxW = g.R - g.L - 16;
+    [t1, t2].forEach(function (t) { var f = fz; t.setAttribute('font-size', f); while (bboxOf(t).w > maxW - 20 && f > 18) { f -= 1; t.setAttribute('font-size', f); } });
+    var w = Math.min(maxW, Math.max(bboxOf(t1).w, bboxOf(t2).w) + 22), h = fz * 2.4 + 14;
+    var x = (g.L + g.R) / 2 - w / 2, y = calc.capBottom ? g.B - (g.compact ? 104 : 56) - h : g.T + (g.compact ? 100 : 52);   // clear of the corner names (2 lines on the phone)
+    rect.setAttribute('x', x); rect.setAttribute('y', y); rect.setAttribute('width', w); rect.setAttribute('height', h);
+    t1.setAttribute('x', x + 11); t1.setAttribute('y', y + 8 + fz * 0.92);
+    t2.setAttribute('x', x + 11); t2.setAttribute('y', y + 8 + fz * 2.12);
+  }
+  function stopCalc(restore) {
+    if (calc.raf) cancelAnimationFrame(calc.raf);
+    calc.raf = 0;
+    var was = calc.on, svg = calc.svg;
+    calc.on = false; calc.svg = null;
+    if (svg) { var L = svg.querySelector('.calc'); if (L) L.parentNode.removeChild(L); svg.classList.remove('calc-on'); setQHL(svg, null); }
+    var b = $('calc-btn'); if (b) b.textContent = '▶ Ver o cálculo';
+    if (was && restore) { placeHandle(); placeDestGo(); updateReading(); }
+  }
+  function openConta() {
+    if (state.tab !== 'diag') setTab('diag');
+    var d = $('conta-sec'); if (!d) return;
+    d.open = true;
+    window.scrollBy({ top: d.getBoundingClientRect().top - headerBottom() - 12, behavior: reducedMotion() ? 'auto' : 'smooth' });
+  }
+
+  // ── v4: "E se…?" — move a score, the boat moves (no AI, just the sum) ─────
+  function simCurOf(cur, sim) {
+    var rub = {}; RKEYS.forEach(function (k) { rub[k] = { nota: sim.rub[k], porque: cur.rubric[k].porque }; });
+    var p = position(rub, sim.legal);
+    return { x: p.x, y: p.y, q: quad(p.x, p.y), anchor: anchorOf(rub), rubric: rub, legalAdj: p.legalAdj, legal: { nota: sim.legal, porque: '' }, titulo: cur.titulo, target: cur.target, pivots: [], sugs: [] };
+  }
+  function simOpen(init) {
+    var cur = state.cur; if (!cur || !cur.rubric) return;
+    if (calc.on) stopCalc(false);
+    var src = init && init.rub ? init.rub : cur.rubric, rub = {};
+    RKEYS.forEach(function (k) { rub[k] = src[k].nota; });
+    state.sim = { rub: rub, legal: cur.legal.nota, label: (init && init.label) || '' };
+    document.documentElement.style.setProperty('--hdr', Math.round(headerBottom()) + 'px');
+    $('sim-panel').hidden = false; $('chart-card').classList.add('sim-on');
+    var stu = document.querySelector('.studio'); if (stu) stu.classList.add('sim-mode');
+    renderSimRows(); renderChart(); simRefresh();
+    setTimeout(function () { var cc = $('chart-card'); window.scrollBy({ top: cc.getBoundingClientRect().top - headerBottom() - 8, behavior: reducedMotion() ? 'auto' : 'smooth' }); }, 30);
+  }
+  function simClose() {
+    if (!state.sim) return;
+    state.sim = null; state.simCur = null;
+    $('sim-panel').hidden = true; $('chart-card').classList.remove('sim-on');
+    var stu = document.querySelector('.studio'); if (stu) stu.classList.remove('sim-mode');
+    renderChart();
+  }
+  function simRowHTML(k, label, n, ai, ptsTxt, inv) {
+    return '<div class="sim-row' + (n !== ai ? ' changed' : '') + '" data-k="' + k + '"><label for="sim-' + k + '"><span class="sim-lab">' + esc(label) + (inv ? ' <span class="hint">(conta contra)</span>' : '') + '</span>' +
+      '<span class="sim-num"><b class="sim-val">' + n + '</b>/10 · <span class="sim-pts">' + ptsTxt + '</span><span class="sim-ai">' + (n !== ai ? ' · IA: ' + ai : '') + '</span></span></label>' +
+      '<input type="range" id="sim-' + k + '" min="0" max="10" step="1" value="' + n + '" data-k="' + k + '"></div>';
+  }
+  function simPtsTxt(k, n) { if (k === 'legal') return fmt1(legalAdjOf(n)) + ' (até ±3)'; var r = rubricDef(k); return fmt1(critPts(r, n)) + ' de ' + maxPts(r); }
+  function renderSimRows() {
+    var cur = state.cur, sim = state.sim, box = $('sim-rows'); if (!cur || !sim || !box) return;
+    var col = function (axis, title) {
+      var h = ['<fieldset class="sim-col"><legend>' + title + '</legend>'];
+      CALC_ORDER.forEach(function (k) { var r = rubricDef(k); if (r.axis === axis) h.push(simRowHTML(k, r.label, sim.rub[k], cur.rubric[k].nota, simPtsTxt(k, sim.rub[k]), r.inverse)); });
+      if (axis === 'y') h.push(simRowHTML('legal', 'Desconto do "parece legal"', sim.legal, cur.legal.nota, simPtsTxt('legal', sim.legal), false));
+      h.push('</fieldset>');
+      return h.join('');
+    };
+    box.innerHTML = col('x', 'Dificuldade de operação') + col('y', 'Potencial financeiro');
+  }
+  function simRefresh() {
+    var cur = state.cur, sc = state.simCur, sim = state.sim; if (!cur || !sc || !sim) return;
+    var bnd = boundary(sc.x, sc.y);
+    $('sim-read').innerHTML = (sim.label ? '<span class="hint">Notas do ' + esc(sim.label) + '</span><br>' : '') +
+      'Dificuldade <b>' + sc.x + '</b> · Potencial financeiro <b>' + sc.y + '</b> → <b>' + esc(QUADS[sc.q].nome) + '</b>' + (sc.anchor ? ' · ⚓ depende de você' : '') +
+      '<br><span class="sim-delta">' + (sc.x === cur.x && sc.y === cur.y ? 'igual às notas da IA' : deltaText(cur, sc) + ' em relação às notas da IA') + '</span>' + (bnd ? '<br><span class="hint">Fica ' + esc(bnd) + '.</span>' : '');
+    var dz = $('sim-dest');
+    if (cur.target) { var d = Math.round(Math.hypot(sc.x - cur.target.x, sc.y - cur.target.y)); dz.innerHTML = 'Até o destino (dificuldade ' + cur.target.x + ' · potencial ' + cur.target.y + '): <b>' + d + ' pontos</b> — <span class="badge ' + (d <= NEAR ? 'b-vai">chega perto' : 'b-nao">fica longe') + '</span>'; dz.hidden = false; }
+    else { dz.textContent = ''; dz.hidden = true; }
+  }
+  var simRaf = 0;
+  function onSimInput(e) {
+    var inp = e.target; if (!inp || inp.type !== 'range' || !state.sim) return;
+    var k = inp.getAttribute('data-k'), n = clamp(parseInt(inp.value, 10) || 0, 0, 10), cur = state.cur;
+    if (k === 'legal') state.sim.legal = n; else state.sim.rub[k] = n;
+    var row = inp.closest('.sim-row'), ai = k === 'legal' ? cur.legal.nota : cur.rubric[k].nota;
+    row.querySelector('.sim-val').textContent = n;
+    row.querySelector('.sim-pts').textContent = simPtsTxt(k, n);
+    row.querySelector('.sim-ai').textContent = n !== ai ? ' · IA: ' + ai : '';
+    row.classList.toggle('changed', n !== ai);
+    if (simRaf) return;
+    simRaf = requestAnimationFrame(function () { simRaf = 0; renderChart(); simRefresh(); });
+  }
+  function simReset() {
+    var cur = state.cur; if (!cur || !state.sim) return;
+    RKEYS.forEach(function (k) { state.sim.rub[k] = cur.rubric[k].nota; });
+    state.sim.legal = cur.legal.nota; state.sim.label = '';
+    renderSimRows(); renderChart(); simRefresh();
+    toast('De volta às notas da IA.');
+  }
+  function simSave() {
+    var cur = state.cur, sc = state.simCur; if (!cur || !sc) return;
+    pushHistory(normalizeEntry({
+      id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: 'simulacao', ts: Date.now(), model: cur.model,
+      ideia: cur.ideia, contexto: cur.contexto, goal: cur.goal, titulo: cut(cur.titulo, 40) + ' (simulação)', resumo: 'Simulação de notas a partir de "' + cur.titulo + '".',
+      rubric: sc.rubric, legal: sc.legal, legalAdj: sc.legalAdj, x: sc.x, y: sc.y, parecidos: [], bil: null, pivots: [], report: null, sugs: [], target: null, sugTarget: null, origem: cur.titulo, ver: 4
+    }));
+  }
+
   // ── Render the on-screen chart ────────────────────────────────────────────
   function hostWidth() { var h = $('chart-host'); return h ? h.clientWidth : 0; }
   function renderChart() {
     var host = $('chart-host'); if (!host) return;
+    if (calc.on) stopCalc(false);
     var hw = hostWidth() || 800;
     state.lastHostW = hw;
     var g = geom('screen', hw); state.g = g;
     var scale = hw / g.W;
     var cur = state.cur;
-    var o = { idp: 'c', cur: cur, mode: state.chartMode, iw: 30 / scale, target: cur && cur.target, showHist: $('toggle-history') && $('toggle-history').checked, history: lsGet(HISTORY_STORE, []).map(normalizeEntry) };
+    var simCur = cur && state.sim ? simCurOf(cur, state.sim) : null;
+    state.simCur = simCur;
+    var o = { idp: 'c', cur: simCur || cur, ghost: simCur ? { x: cur.x, y: cur.y, anchor: cur.anchor } : null, tagText: simCur ? 'Simulação' : 'Sua ideia',
+      mode: simCur ? 'none' : state.chartMode, iw: 30 / scale, target: cur && cur.target, showHist: !simCur && $('toggle-history') && $('toggle-history').checked, history: lsGet(HISTORY_STORE, []).map(normalizeEntry) };
     host.innerHTML = buildSVG(g, o);
     host.classList.toggle('can-drag', !!cur && !$('result').hidden);
     var svg = host.querySelector('svg'), res = null;
@@ -704,6 +951,16 @@ const App = (function () {
     placeHandle(); placeDestGo();
     hideLens(true);
     updateHint();
+    updateReading();
+  }
+  // One reading next to the chart: the measured position, in words (v4)
+  function updateReading() {
+    var rd = $('chart-reading'), cb = $('calc-btn'), cur = state.cur, sc = state.simCur;
+    if (cb) cb.hidden = !cur || !cur.rubric || !!state.sim;
+    if (!rd) return;
+    if (!cur) { rd.innerHTML = ''; return; }
+    var p = sc || cur;
+    rd.innerHTML = (sc ? '<span class="rd-sim">Simulação:</span> ' : '') + 'Dificuldade <b>' + p.x + '</b> · Potencial financeiro <b>' + p.y + '</b> → <b>' + esc(QUADS[quad(p.x, p.y)].nome) + '</b>' + (p.anchor ? ' · ⚓' : '');
   }
   function wrapPoint(svg, ux, uy) {
     var wr = $('chart-wrap').getBoundingClientRect();
@@ -728,7 +985,7 @@ const App = (function () {
   function placeHandle() {
     var h = $('boat-handle'), svg = $('chart-host').querySelector('svg'), g = state.g;
     if (!h) return;
-    if (!state.cur || !svg || $('result').hidden) { h.hidden = true; return; }
+    if (!state.cur || !svg || $('result').hidden || state.sim || calc.on) { h.hidden = true; return; }
     var p = wrapPoint(svg, pxf(g)(state.cur.x), pyf(g)(state.cur.y));
     h.style.left = Math.round(p.x - 28) + 'px'; h.style.top = Math.round(p.y - 28) + 'px';
     h.hidden = false;
@@ -739,7 +996,7 @@ const App = (function () {
     var b = $('dest-go'), svg = $('chart-host').querySelector('svg'), g = state.g, cur = state.cur;
     if (!b) return;
     var done = cur && cur.target && cur.sugTarget && cur.sugTarget.x === cur.target.x && cur.sugTarget.y === cur.target.y && cur.sugs && cur.sugs.length;
-    if (!cur || !cur.target || !svg || $('result').hidden) { b.hidden = true; return; }
+    if (!cur || !cur.target || !svg || $('result').hidden || state.sim || calc.on) { b.hidden = true; return; }
     var mode = state.sugBusy ? 'busy' : (done ? 'ver' : 'go');
     if (mode === 'ver' && state.seenKey === sugKey(cur)) { b.hidden = true; return; }   // list already seen: keep the board clean
     if (b.getAttribute('data-mode') !== mode) {
@@ -795,8 +1052,8 @@ const App = (function () {
   function updateHint() {
     var h = $('chart-hint'); if (!h) return;
     var hover = false; try { hover = window.matchMedia('(hover: hover)').matches; } catch (e) {}
-    if (!state.cur || $('result').hidden) h.textContent = hover ? 'Passe o mouse na carta para ver exemplos. O "i" de cada canto explica o quadrante.' : 'Toque na carta para ver exemplos. O "i" de cada canto explica o quadrante.';
-    else h.textContent = hover ? 'Arraste na carta (ou o barco) até onde você quer chegar. Pelo teclado: setas e Enter.' : 'Arraste o barco até onde você quer chegar. Toque na carta para ver exemplos.';
+    if (!state.cur || $('result').hidden) h.textContent = hover ? 'Passe o mouse no gráfico para ver exemplos. O "i" de cada canto explica o quadrante.' : 'Toque no gráfico para ver exemplos. O "i" de cada canto explica o quadrante.';
+    else h.textContent = hover ? 'Arraste no gráfico (ou o barco) até onde você quer chegar. Pelo teclado: setas e Enter.' : 'Arraste o barco até onde você quer chegar. Toque no gráfico para ver exemplos.';
   }
 
   // ── Pointer → data coordinates ────────────────────────────────────────────
@@ -835,7 +1092,7 @@ const App = (function () {
       var q = quad(e.x, e.y), src = sourceById(e.s || 'hormozi_video');
       h.push('<li><button type="button" class="pop-item" aria-expanded="false" aria-controls="pop-d' + i + '"><span class="pop-name">' + esc(e.t) + (exAnchor(e) ? ' <span class="anc" title="Âncora: depende de você">⚓</span>' : '') + '</span><span class="pop-plus" aria-hidden="true">+</span></button>' +
         '<div class="pop-detail" id="pop-d' + i + '" hidden><p><b>' + esc(QUADS[q].nome) + '</b> · ' + esc(QUADS[q].eixo) + (exAnchor(e) ? ' · ⚓ depende de você' : '') + '</p>' +
-        '<p><b>Dificuldade:</b> ' + esc(e.d) + '</p><p><b>Dinheiro:</b> ' + esc(e.m) + '</p>' +
+        '<p><b>Dificuldade:</b> ' + esc(e.d) + '</p><p><b>Potencial financeiro:</b> ' + esc(e.m) + '</p>' +
         '<p class="pop-src">Fonte: <a class="src" href="#src-' + esc(src.id) + '">' + esc(src.short) + '</a></p></div></li>');
     });
     h.push('</ul><p class="pop-foot">Exemplos citados no vídeo, em posição ilustrativa. ' + (pinned ? 'Esc ou clique fora fecha.' : 'Clique para fixar.') + '</p>');
@@ -1077,14 +1334,14 @@ const App = (function () {
   var LANG = 'Escreva SEMPRE em português do Brasil, com acentuação correta, frases claras e diretas, sem jargão em inglês desnecessário.';
   var KB = [
     'BASE DE CONHECIMENTO (use SOMENTE isto — não invente estatísticas, casos ou citações):',
-    'Vídeo "How To Make More Money Than You Deserve (My 2027 Framework)" (Alex Hormozi). Tese: ganhar mais do que "merece" depende menos de inteligência e esforço e mais do TIPO de negócio (o veículo). Eixos: quão difícil é operar × quanto dinheiro dá para fazer. História de Buffett: um colega mais inteligente e mais trabalhador foi para o aço e ganhou muito menos — por causa do barco.',
+    'Vídeo "How To Make More Money Than You Deserve (My 2027 Framework)" (Alex Hormozi). Tese: ganhar mais do que "merece" depende menos de inteligência e esforço e mais do TIPO de negócio (o veículo). Eixos: dificuldade de operação (quão difícil é operar) × potencial financeiro (quanto dinheiro dá para fazer, realisticamente). História de Buffett: um colega mais inteligente e mais trabalhador foi para o aço e ganhou muito menos — por causa do barco.',
     'ESTA FERRAMENTA usa 4 QUADRANTES (os veículos 1, 2, 4 e 5 do vídeo) e trata o veículo 3 como uma ÂNCORA que pode aparecer em qualquer quadrante:',
-    '- Commodities braçais (difícil, pouco dinheiro; veículo 1): barreira de entrada baixa → concorrência feroz, escala limitada, muito arrasto operacional. Restaurante tradicional, academia de serviço, agência para PME, varejo físico, eventos. Mesmo quem tem sucesso ali ganharia mais aplicando as mesmas habilidades num veículo melhor.',
-    '- Caixa inicial (fácil, pouco dinheiro; veículo 2): uma pessoa com a habilidade certa chega a renda de top 1%, raramente maior. Dropshipping, serviços leves para casa, vending/ATM, wholesale imobiliário, arbitragem de Airbnb, conteúdo de afiliado. Fácil não é ruim: serve para gerar caixa, aprender e juntar capital.',
-    '- Fosso (difícil, muito dinheiro; veículo 4): barreiras de entrada limitam a concorrência — habilidade, capital, regulação, tempo, efeito de rede. IA de verdade, farmacêutica, manufatura especializada, franquias, roll-ups, marketplaces, SaaS, bens de consumo, finanças, bancos, energia/data centers. "Se todo mundo pode fazer, todo mundo vai fazer"; prefira competir com 20 do que com 5 milhões.',
-    '- Arbitragem (fácil, muito dinheiro; veículo 5): demanda com vento a favor, oferta restrita ou mudança regulatória; janelas de tempo. Med spas (o dinheiro está nas pessoas mais velhas), assessoria de patrimônio, GLP-1, Botox, cuidado de idosos, cobrança, gestão de resíduos, sindicalização imobiliária, limpeza comercial, manutenção de elevadores. Desconto do "parece legal": o que não soa bem num coquetel tem menos concorrência.',
+    '- Commodity braçal (difícil, baixo potencial financeiro; veículo 1): barreira de entrada baixa → concorrência feroz, escala limitada, muito arrasto operacional. Restaurante tradicional, academia de serviço, agência para PME, varejo físico, eventos. Mesmo quem tem sucesso ali ganharia mais aplicando as mesmas habilidades num veículo melhor.',
+    '- Negócio de entrada (fácil, baixo potencial financeiro; veículo 2): uma pessoa com a habilidade certa chega a renda de top 1%, raramente maior. Dropshipping, serviços leves para casa, vending/ATM, wholesale imobiliário, arbitragem de Airbnb, conteúdo de afiliado. Fácil não é ruim: serve para gerar caixa, aprender e juntar capital.',
+    '- Fosso competitivo (difícil, alto potencial financeiro; veículo 4): barreiras de entrada limitam a concorrência — habilidade, capital, regulação, tempo, efeito de rede. IA de verdade, farmacêutica, manufatura especializada, franquias, roll-ups, marketplaces, SaaS, bens de consumo, finanças, bancos, energia/data centers. "Se todo mundo pode fazer, todo mundo vai fazer"; prefira competir com 20 do que com 5 milhões.',
+    '- Arbitragem (fácil, alto potencial financeiro; veículo 5): demanda com vento a favor, oferta restrita ou mudança regulatória; janelas de tempo. Med spas (o dinheiro está nas pessoas mais velhas), assessoria de patrimônio, GLP-1, Botox, cuidado de idosos, cobrança, gestão de resíduos, sindicalização imobiliária, limpeza comercial, manutenção de elevadores. Desconto do "parece legal": o que não soa bem num coquetel tem menos concorrência.',
     '- ÂNCORA "depende de você" (o veículo 3 do vídeo: coaching, implementação de IA, cirurgiões, agências, influenciadores): o negócio gera renda, mas vale pouco na venda porque depende do fundador — um "emprego turbinado" (lógica de Built to Sell). A ferramenta liga a âncora quando a nota de independência do fundador é 4 ou menos, em QUALQUER quadrante.',
-    'Fechamento: escolha o veículo pelo objetivo — fluxo de caixa, renda alta, valor de empresa (escalável, transferível e defensável) ou bilhões (mercado enorme + fosso). Escolha o barco, depois reme o mais forte possível.',
+    'Fechamento: escolha o veículo pelo objetivo — fluxo de caixa, renda alta, valor de empresa (escalável, transferível e defensável) ou bilhões (mercado enorme + fosso). Escolha o veículo, depois reme o mais forte possível.',
     'Teste do bilionário: "como é isso quando está no máximo? Quem é o bilionário disso?" — se ninguém escalou ao máximo, desconfie.'
   ].join('\n');
   var CALIB = [
@@ -1099,19 +1356,19 @@ const App = (function () {
   var SRC_LIST = SOURCES.map(function (s) { return '- ' + s.id + ': ' + s.title + ' — sustenta: ' + s.supports; }).join('\n');
   var RUBRIC_DEFS = RUBRIC.map(function (r) { return '- ' + r.k + ' (' + r.label + '): ' + r.hint; }).join('\n');
   function posText(e) {
-    return 'dificuldade ' + e.x + '/100, dinheiro ' + e.y + '/100 → quadrante ' + QUADS[e.q].nome + ' (' + QUADS[e.q].eixo + ')' +
+    return 'dificuldade de operação ' + e.x + '/100, potencial financeiro ' + e.y + '/100 → quadrante ' + QUADS[e.q].nome + ' (' + QUADS[e.q].eixo + ')' +
       (e.anchor ? '; ÂNCORA ligada (independência do fundador ' + e.rubric.transferivel.nota + '/10: depende de você)' : '; sem âncora') +
       (boundary(e.x, e.y) ? '; ' + boundary(e.x, e.y) : '');
   }
 
   function rubricMessages(ideia, contexto) {
     var sys = [
-      'Você é um analista que aplica o framework "Índice do Idiota". Sua tarefa agora é SÓ pontuar uma rúbrica fixa — a posição na carta será calculada por uma fórmula, não por você.',
+      'Você é um analista que aplica o framework "Índice do Idiota". Sua tarefa agora é SÓ pontuar uma rúbrica fixa — a posição no gráfico será calculada por uma fórmula, não por você.',
       KB,
       'RÚBRICA (nota inteira 0–10 para cada critério, com "porque" de no máximo 22 palavras, específico para a ideia):\n' + RUBRIC_DEFS,
       'Também: "parece_legal" (0–10): quão "legal/glamoroso" o negócio soa num coquetel (10 = todo mundo quer fazer; 0 = ninguém quer dizer que faz).',
       CALIB,
-      'Seja honesto e cético: não infle notas de dinheiro por entusiasmo. Considere o contexto do Brasil quando a ideia for local.',
+      'Seja honesto e cético: não infle as notas de potencial financeiro por entusiasmo. Considere o contexto do Brasil quando a ideia for local.',
       LANG,
       'Responda APENAS com um objeto JSON neste formato exato (sem markdown):',
       '{"titulo":"nome curto da ideia (máx. 6 palavras)","resumo":"a ideia reescrita em 1 frase","rubrica":{"trabalho":{"nota":0,"porque":""},"habilidade":{...},"capital":{...},"regulacao":{...},"operacao":{...},"tempo":{...},"teto":{...},"margem":{...},"escala":{...},"fosso":{...},"ventos":{...},"recorrencia":{...},"transferivel":{...},"concorrencia":{...}},"parece_legal":{"nota":0,"porque":""},"parecidos":["até 3 exemplos do vídeo mais parecidos com a ideia"],"bilionario":{"veredito":"sim | raro | nao","exemplo":"empresa/pessoa real que escalou isso ao máximo, ou vazio se não houver","comentario":"1 frase"}}'
@@ -1126,7 +1383,7 @@ const App = (function () {
       'Você é um conselheiro de negócios que aplica o framework "Índice do Idiota" e SOMENTE as fontes listadas. Nunca invente números, estudos, casos ou citações; se algo não está nas fontes, fale como raciocínio, não como fato.',
       KB,
       'FONTES PERMITIDAS (cada item do relatório deve citar UMA delas pelo id):\n' + SRC_LIST,
-      'PIVÔS: proponha exatamente 3 maneiras concretas de "subir na carta" para ESTA ideia (ex.: mudar para um público mais velho e com dinheiro; roll-up; franquear; criar recorrência; aproveitar uma janela regulatória; ir para o lado "sem glamour" do mercado; soltar a âncora tirando a dependência do fundador; construir um fosso). Para cada pivô dê "deltas": variações inteiras de -4 a +4 nas notas da rúbrica (só chaves: ' + RKEYS.join(', ') + '). Seja realista. NÃO escreva nome de quadrante nem número de veículo no nome ou na descrição do pivô — a ferramenta recalcula e mostra o destino.',
+      'PIVÔS: proponha exatamente 3 maneiras concretas de "subir no gráfico" para ESTA ideia (ex.: mudar para um público mais velho e com dinheiro; roll-up; franquear; criar recorrência; aproveitar uma janela regulatória; ir para o lado "sem glamour" do mercado; soltar a âncora tirando a dependência do fundador; construir um fosso). Para cada pivô dê "deltas": variações inteiras de -4 a +4 nas notas da rúbrica (só chaves: ' + RKEYS.join(', ') + '). Seja realista. NÃO escreva nome de quadrante nem número de veículo no nome ou na descrição do pivô — a ferramenta recalcula e mostra o destino.',
       LANG,
       'Responda APENAS com um objeto JSON neste formato exato (sem markdown):',
       '{"diagnostico":"3 a 4 frases: por que a ideia caiu neste quadrante (e na âncora, se ligada) e o que isso significa","por_que":[{"texto":"","fonte":"id"}],"riscos":[{"texto":"","fonte":"id"}],"encaixe":{"texto":"2 frases sobre o encaixe entre a posição e o objetivo declarado","fonte":"id"},"proximos_passos":[{"texto":"ação concreta para os próximos 30 dias","fonte":"id"}],"pivos":[{"nome":"","tipo":"","descricao":"2 frases","deltas":{"chave":0},"fonte":"id"}],"frase_final":"1 frase de fechamento no espírito de escolher o barco e remar forte"}',
@@ -1138,7 +1395,7 @@ const App = (function () {
       'OBJETIVO DECLARADO: ' + GOALS[cur.goal].label + ' (encaixe calculado pela ferramenta: ' + cur.fit + ')',
       'POSIÇÃO CALCULADA PELA FERRAMENTA: ' + posText(cur) + '. NÃO conteste a posição; explique-a.',
       'RÚBRICA PONTUADA:\n' + rubTxt,
-      'Desconto do "parece legal": nota ' + cur.legal.nota + ' (' + cur.legal.porque + ') → ajuste de ' + cur.legalAdj + ' no eixo do dinheiro.',
+      'Desconto do "parece legal": nota ' + cur.legal.nota + ' (' + cur.legal.porque + ') → ajuste de ' + cur.legalAdj + ' no eixo do potencial financeiro.',
       'Teste do bilionário: ' + cur.bil.veredito + (cur.bil.exemplo ? ' — ' + cur.bil.exemplo : '') + '. ' + cur.bil.comentario
     ].filter(Boolean).join('\n\n');
     return [{ role: 'system', content: sys }, { role: 'user', content: user }];
@@ -1151,9 +1408,9 @@ const App = (function () {
     var dx = t.x <= 35 ? 'fáceis de operar (pouca mão de obra, habilidade comum, pouco capital, pouca regulação, operação simples, resultado rápido)'
       : t.x >= 65 ? 'difíceis de operar (habilidade rara, capital, licenças, operação pesada ou anos para maturar, que afastam os concorrentes)'
       : 'de dificuldade média (alguma habilidade, capital ou operação, mas nada que leve anos)';
-    var dy = t.y >= 65 ? 'que dão muito dinheiro (mercado grande, margem alta, crescem sem crescer a equipe na mesma proporção, com fosso ou vento a favor, cliente recorrente, funcionam sem o dono)'
-      : t.y <= 35 ? 'que dão pouco dinheiro (teto baixo, margem apertada ou muita concorrência)'
-      : 'que dão dinheiro médio (boa margem ou bom mercado, mas não os dois com folga)';
+    var dy = t.y >= 65 ? 'com alto potencial financeiro (mercado grande, margem alta, crescem sem crescer a equipe na mesma proporção, com fosso ou vento a favor, cliente recorrente, funcionam sem o dono)'
+      : t.y <= 35 ? 'com baixo potencial financeiro (teto baixo, margem apertada ou muita concorrência)'
+      : 'com potencial financeiro médio (boa margem ou bom mercado, mas não os dois com folga)';
     var near = EXAMPLES.map(function (e) { return { e: e, d: Math.hypot(e.x - t.x, e.y - t.y) }; }).sort(function (a, b) { return a.d - b.d; }).slice(0, 3).map(function (o) { return o.e.t; });
     return [
       'O QUE EXISTE NESSE DESTINO: negócios ' + dx + ' e ' + dy + '. Só como referência do perfil, não para copiar: ' + near.join(', ') + ' ficam perto desse ponto no vídeo. Procure negócios com esse perfil que reaproveitem as competências e o histórico da pessoa.',
@@ -1180,7 +1437,7 @@ const App = (function () {
       cur.contexto ? 'CONTEXTO: ' + cur.contexto : '',
       'POSIÇÃO ATUAL (calculada): ' + posText(cur) + '.',
       'NOTAS ATUAIS: ' + rubNotes + '; parece_legal=' + cur.legal.nota,
-      'DESTINO escolhido na carta: dificuldade ' + t.x + '/100, dinheiro ' + t.y + '/100 → ' + QUADS[tq].nome + ' (' + QUADS[tq].eixo + '). Mudança desejada: ' + signed(t.y - cur.y) + ' dinheiro, ' + signed(t.x - cur.x) + ' dificuldade.',
+      'DESTINO escolhido no gráfico: dificuldade de operação ' + t.x + '/100, potencial financeiro ' + t.y + '/100 → ' + QUADS[tq].nome + ' (' + QUADS[tq].eixo + '). Mudança desejada: ' + signed(t.y - cur.y) + ' de potencial financeiro, ' + signed(t.x - cur.x) + ' de dificuldade.',
       targetProfile(t),
       'COMPETÊNCIAS: ' + (comp || 'não informado'),
       'HISTÓRICO: ' + (hist || 'não informado'),
@@ -1247,22 +1504,32 @@ const App = (function () {
   }
   function section(title, body, open) { return '<details class="rsec"' + (open ? ' open' : '') + '><summary>' + esc(title) + '</summary><div class="rsec-body">' + body + '</div></details>'; }
   function rubricTable(cur) {
-    var h = ['<div class="rubric-wrap"><table class="rubric"><thead><tr><th>Critério</th><th>Nota</th><th>Por quê</th></tr></thead><tbody>'];
-    h.push('<tr class="axis-row"><td colspan="3">Dificuldade → ' + cur.x + ' / 100</td></tr>');
-    RUBRIC.forEach(function (r, idx) {
-      if (idx === 6) h.push('<tr class="axis-row"><td colspan="3">Dinheiro → ' + cur.y + ' / 100</td></tr>');
-      var n = cur.rubric[r.k].nota;
-      h.push('<tr><td>' + esc(r.label) + (r.inverse ? ' <span class="hint">(conta contra)</span>' : '') + (r.k === 'transferivel' && n <= ANCHOR_MAX ? ' <span class="hint">⚓ âncora</span>' : '') + '</td><td class="score">' + n + '/10</td><td class="why">' + (esc(cur.rubric[r.k].porque) || '—') + '</td></tr>');
+    var h = ['<p class="conta-lead">A IA dá as notas; a ferramenta faz a conta: <b>nota × peso = pontos</b>, e a soma é a posição. Cada eixo vale no máximo 100.</p>',
+      '<div class="rubric-wrap"><table class="rubric"><thead><tr><th>Critério</th><th>Nota</th><th>Pontos</th><th>Por quê</th></tr></thead><tbody>'];
+    h.push('<tr class="axis-row"><td colspan="4">Dificuldade de operação = ' + cur.x + ' de 100</td></tr>');
+    CALC_ORDER.forEach(function (k) {
+      var r = rubricDef(k);
+      if (k === 'teto') h.push('<tr class="axis-row"><td colspan="4">Potencial financeiro = ' + cur.y + ' de 100</td></tr>');
+      var n = cur.rubric[k].nota, pts = critPts(r, n), max = maxPts(r);
+      h.push('<tr><td>' + esc(r.label) + (r.inverse ? ' <span class="hint">(conta contra: 10 − nota)</span>' : '') + (k === 'transferivel' && n <= ANCHOR_MAX ? ' <span class="hint">⚓ âncora</span>' : '') + '</td>' +
+        '<td class="score">' + n + '/10</td><td class="pts"><span class="pbar" aria-hidden="true"><i style="width:' + Math.round(pts / max * 100) + '%"></i></span>' + fmt1(pts) + ' de ' + max + '</td>' +
+        '<td class="why">' + (esc(cur.rubric[k].porque) || '—') + '</td></tr>');
     });
-    h.push('<tr><td>Desconto do "parece legal"</td><td class="score">' + cur.legal.nota + '/10 → ' + (cur.legalAdj > 0 ? '+' : '') + cur.legalAdj + '</td><td class="why">' + (esc(cur.legal.porque) || '—') + '</td></tr>');
+    h.push('<tr><td>Desconto do "parece legal"</td><td class="score">' + cur.legal.nota + '/10</td><td class="pts">' + fmt1(cur.legalAdj) + ' <span class="hint">(até ±3)</span></td><td class="why">' + (esc(cur.legal.porque) || '—') + '</td></tr>');
     h.push('</tbody></table></div>');
     return h.join('');
+  }
+  function contaSection(cur, open) {
+    return '<details class="rsec" id="conta-sec"' + (open ? ' open' : '') + '><summary>Como o ponto foi calculado (a conta completa)</summary><div class="rsec-body">' + rubricTable(cur) + '</div></details>';
+  }
+  function repTools() {
+    return '<div class="rep-tools"><button type="button" class="btn-secondary sim-open">Simular notas (e se…?)</button><button type="button" class="btn-link calc-open">▶ Ver o cálculo no gráfico</button></div>';
   }
   function anchorLine() { return '<p class="anchor-line"><span class="anc-ico" aria-hidden="true">⚓</span> <b>' + esc(ANCHOR.nome) + '</b> — ' + esc(ANCHOR.linha) + '. <button type="button" class="zinfo zinfo-inline" data-q="anchor" aria-expanded="false" aria-controls="zone-card" aria-label="O que é a âncora?">i</button></p>'; }
   function headerHTML(cur) {
     var qd = QUADS[cur.q], bnd = boundary(cur.x, cur.y);
     return '<h3 class="rep-title">' + esc(cur.titulo) + '</h3>' +
-      '<dl class="fix-strip"><div><dt>Dificuldade</dt><dd>' + cur.x + '/100</dd></div><div><dt>Dinheiro</dt><dd>' + cur.y + '/100</dd></div>' +
+      '<dl class="fix-strip"><div><dt>Dificuldade de operação</dt><dd>' + cur.x + '/100</dd></div><div><dt>Potencial financeiro</dt><dd>' + cur.y + '/100</dd></div>' +
       '<div><dt>Quadrante</dt><dd class="v">' + esc(qd.nome) + (cur.anchor ? ' ⚓' : '') + '</dd></div><div><dt>Objetivo</dt><dd>' + esc(GOALS[cur.goal] ? GOALS[cur.goal].label : '—') + '</dd></div></dl>' +
       '<div class="vehicle-plate"><div><p class="vname">' + esc(qd.nome) + ' <span class="hint">· ' + esc(qd.eixo) + '</span></p><p class="vdesc">' + esc(qd.resumo) + '</p></div></div>' +
       (cur.anchor ? anchorLine() : '') +
@@ -1272,15 +1539,18 @@ const App = (function () {
     var cur = state.cur, body = $('report-body');
     if (!cur) { body.innerHTML = ''; return; }
     var h = [headerHTML(cur)];
-    if (cur.kind === 'sugestao') {
-      h.push('<div class="callout"><b>Sugestão salva.</b> Ela ainda não tem o diagnóstico completo. <button type="button" class="btn-secondary" id="sug-full-btn">Avaliar a fundo</button></div>');
-      h.push(section('A rúbrica (notas da IA, posição pela régua da ferramenta)', rubricTable(cur), false));
+    if (cur.kind === 'sugestao' || cur.kind === 'simulacao') {
+      h.push(cur.kind === 'simulacao' ? '<div class="callout"><b>Simulação salva</b> a partir de "' + esc(cur.origem || '') + '". As notas foram mexidas no simulador; não há diagnóstico da IA. <button type="button" class="btn-secondary" id="sug-full-btn">Avaliar a fundo</button></div>'
+        : '<div class="callout"><b>Sugestão salva.</b> Ela ainda não tem o diagnóstico completo. <button type="button" class="btn-secondary" id="sug-full-btn">Avaliar a fundo</button></div>');
+      h.push(repTools());
+      h.push(contaSection(cur, false));
       body.innerHTML = h.join('');
       var fb = $('sug-full-btn'); if (fb) fb.addEventListener('click', function () { evaluateIdea(cur.ideia); });
       return;
     }
     var rep = cur.report;
-    if (rep && (!cur.ver || cur.ver < 3)) h.push('<p class="edge-line">Este diagnóstico foi escrito na versão anterior da carta (com 5 veículos). Clique em <b>Posicionar na carta</b> para refazer com os 4 quadrantes e a âncora.</p>');
+    h.push(repTools());
+    if (rep && (!cur.ver || cur.ver < 3)) h.push('<p class="edge-line">Este diagnóstico foi escrito numa versão anterior do gráfico (com 5 veículos). Clique em <b>Posicionar no gráfico</b> para refazer com os 4 quadrantes e a âncora.</p>');
     if (rep && rep.diagnostico) h.push('<p class="diag">' + esc(rep.diagnostico) + '</p>');
     var bil = cur.bil || { veredito: 'raro', exemplo: '', comentario: '' };
     var bilTxt = bil.veredito === 'sim' ? 'Sim, existe quem escalou isso ao máximo' : (bil.veredito === 'raro' ? 'Raro: há poucos exemplos' : (bil.exemplo ? 'Não neste formato; quem chegou lá fez outro negócio' : 'Não: ninguém escalou isso a bilhões'));
@@ -1293,16 +1563,17 @@ const App = (function () {
         var pv = ['<div class="pivots">'];
         cur.pivots.forEach(function (p, i) {
           pv.push('<div class="pivot"><span class="ptag">' + (i + 1) + (p.tipo ? ' · ' + esc(p.tipo.replace(/[_-]+/g, ' ')) : '') + '</span><h5>' + esc(p.nome) + '</h5><p>' + esc(p.descricao) + '</p>' +
-            '<p class="pmove">' + signed(p.y - cur.y) + ' dinheiro · ' + signed(p.x - cur.x) + ' dificuldade · ' + esc(QUADS[cur.q].nome) + ' → <b>' + esc(QUADS[p.q].nome) + '</b>' + (p.anchor ? ' ⚓' : '') + ' ' + srcChip(p.fonte) + '</p></div>');
+            (p.deltas && Object.keys(p.deltas).length ? '<p><button type="button" class="btn-link piv-sim" data-i="' + i + '">Ver no simulador (as notas que mudam)</button></p>' : '') +
+            '<p class="pmove">' + deltaText(cur, p) + ' · ' + esc(QUADS[cur.q].nome) + ' → <b>' + esc(QUADS[p.q].nome) + '</b>' + (p.anchor ? ' ⚓' : '') + ' ' + srcChip(p.fonte) + '</p></div>');
         });
         pv.push('</div>');
-        h.push(section('Rotas de pivô (os números na carta)', pv.join(''), true));
+        h.push(section('Pivôs (os números no gráfico)', pv.join(''), true));
       }
       h.push(section('Por que este quadrante', listHTML(rep.por_que), false));
-      h.push(section('Riscos do barco', listHTML(rep.riscos, 'risk'), false));
+      h.push(section('Riscos do negócio', listHTML(rep.riscos, 'risk'), false));
       if (cur.parecidos && cur.parecidos.length) h.push('<p class="hint">Parecida com: ' + esc(cur.parecidos.join(' · ')) + '</p>');
     }
-    h.push(section('A rúbrica completa (notas da IA, posição pela régua da ferramenta)', rubricTable(cur), false));
+    h.push(contaSection(cur, false));
     if (rep && rep.frase) h.push('<p class="closing">' + esc(rep.frase) + '</p>');
     h.push('<p class="disclaimer">Modelo: ' + esc(cur.model || '') + ' · ' + esc(new Date(cur.ts).toLocaleString('pt-BR')) + '. Estimativa educacional — não é recomendação de investimento.</p>');
     body.innerHTML = h.join('');
@@ -1314,11 +1585,11 @@ const App = (function () {
     if (cur.target) {
       var b = boundary(cur.target.x, cur.target.y);
       sm.innerHTML = '<b>Destino:</b> ' + esc(destText(cur)) + (b ? ' <span class="hint">(' + esc(b) + ')</span>' : '');
-    } else sm.textContent = 'Arraste na carta (ou o barco) até onde você quer chegar.';
-    chips.innerHTML = '<span class="chips-lead">ou escolha um rumo:</span>' + Object.keys(CHIPS).map(function (k) {
+    } else sm.textContent = 'Arraste no gráfico (ou o barco) até onde você quer chegar.';
+    chips.innerHTML = '<span class="chips-lead">ou use um atalho:</span>' + Object.keys(CHIPS).map(function (k) {
       var at = CHIPS[k].at(cur);
       if (Math.hypot(at[0] - cur.x, at[1] - cur.y) < 5) return '';
-      return '<button type="button" class="dir-btn" data-dir="' + k + '">' + esc(CHIPS[k].label) + '</button>';
+      return '<button type="button" class="dir-btn" data-dir="' + k + '">' + esc(narrow() && CHIPS[k].short ? CHIPS[k].short : CHIPS[k].label) + '</button>';
     }).join('');
     $('sug-btn').disabled = !cur.target || state.sugBusy;
     prefillObj();
@@ -1328,10 +1599,10 @@ const App = (function () {
     var cur = state.cur, list = $('sug-list'); if (!list) return;
     if (!cur || !cur.sugs || !cur.sugs.length) { list.innerHTML = ''; return; }
     var t = cur.sugTarget || cur.target;
-    list.innerHTML = '<p class="sug-head">Para chegar em <b>' + esc(QUADS[quad(t.x, t.y)].nome) + '</b> (dificuldade ' + t.x + ', dinheiro ' + t.y + ') · ordenado pela distância calculada. A posição vem de uma rúbrica rápida; "Avaliar a fundo" refaz a avaliação completa e ela pode mudar.</p>' + cur.sugs.map(function (s, i) {
+    list.innerHTML = '<p class="sug-head">Para chegar em <b>' + esc(QUADS[quad(t.x, t.y)].nome) + '</b> (dificuldade ' + t.x + ', potencial ' + t.y + ') · ordenado pela distância calculada. A posição vem de uma rúbrica rápida; "Avaliar a fundo" refaz a avaliação completa e ela pode mudar.</p>' + cur.sugs.map(function (s, i) {
       return '<article class="sug-card ' + (s.perto ? 'vai' : 'nao') + '">' +
         '<header><span class="sug-num">' + (i + 1) + '</span><h5>' + esc(s.nome) + '</h5><span class="badge ' + (s.perto ? 'b-vai' : 'b-nao') + '">' + (s.perto ? 'chega perto' : 'fica longe') + '</span></header>' +
-        '<p class="sug-move">a ' + s.dist + ' pontos do destino · ' + signed(s.dy) + ' dinheiro · ' + signed(s.dx) + ' dificuldade · ' + esc(QUADS[s.q].nome) + (s.anchor ? ' · ⚓ depende de você' : '') + '</p>' +
+        '<p class="sug-move">a ' + s.dist + ' pontos do destino · ' + signed(s.dy) + ' potencial · ' + signed(s.dx) + ' dificuldade · ' + esc(QUADS[s.q].nome) + (s.anchor ? ' · ⚓ depende de você' : '') + '</p>' +
         (s.descricao ? '<p>' + esc(s.descricao) + '</p>' : '') +
         (s.porque ? '<p><b>Por que é parecido:</b> ' + esc(s.porque) + '</p>' : '') +
         (s.serve ? '<p><b>Como serve aos seus objetivos:</b> ' + esc(s.serve) + ' ' + srcChip(s.fonte) + '</p>' : '') +
@@ -1389,7 +1660,8 @@ const App = (function () {
     stopMic();
     setBusy(true);
     hideLens(true); closeCard(false);
-    $('loading-title').textContent = 'Tirando as sondagens…';
+    if (state.sim) simClose();
+    $('loading-title').textContent = 'Calculando a posição…';
     $('loading-sub').textContent = 'A IA está pontuando os 14 critérios da rúbrica.';
     var prev = state.cur;
     state.cur = null;
@@ -1408,7 +1680,7 @@ const App = (function () {
       if (['sim', 'raro', 'nao'].indexOf(ver) === -1) ver = 'raro';
       var cur = normalizeEntry({
         id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-        ver: 3, ts: Date.now(), model: model, ideia: ideia, contexto: contexto, goal: goal,
+        ver: 4, ts: Date.now(), model: model, ideia: ideia, contexto: contexto, goal: goal,
         titulo: clean(j.titulo) || ideia.slice(0, 40), resumo: clean(j.resumo),
         rubric: rub, legal: legal, legalAdj: pos.legalAdj, x: pos.x, y: pos.y,
         parecidos: (Array.isArray(j.parecidos) ? j.parecidos.map(clean).filter(Boolean).slice(0, 3) : []),
@@ -1418,13 +1690,14 @@ const App = (function () {
       state.cur = cur;
       state.tab = 'diag'; state.chartMode = 'diag';
       renderChart();
-      $('loading-title').textContent = QUADS[cur.q].nome + (cur.anchor ? ' ⚓' : '') + '. Traçando as rotas…';
+      playCalc(false);
+      $('loading-title').textContent = QUADS[cur.q].nome + (cur.anchor ? ' ⚓' : '') + '. Escrevendo o diagnóstico…';
       $('loading-sub').textContent = 'A IA está escrevendo o diagnóstico e os pivôs com base nas fontes.';
       return callJSON(reportMessages(cur), 9000).then(function (rep) {
         cur.report = normReport(rep || {}, cur);
         lsSet(CURRENT_SLOT, cur);
         renderReport(); showState('done'); setTab('diag');
-        toast('Carta pronta — ' + QUADS[cur.q].nome + (cur.anchor ? ', com âncora' : '') + '.');
+        toast('Gráfico pronto — ' + QUADS[cur.q].nome + (cur.anchor ? ', com âncora' : '') + '.');
       }, function (e) {
         lsSet(CURRENT_SLOT, cur);
         renderReport(); showState('error', 'A posição foi calculada, mas o diagnóstico falhou: ' + (e && e.message ? e.message : 'erro desconhecido') + ' Clique em "Tentar de novo".');
@@ -1454,7 +1727,7 @@ const App = (function () {
   function suggest() {
     var cur = state.cur;
     if (!cur || state.sugBusy) return;
-    if (!cur.target) { toast('Arraste na carta até onde você quer chegar (ou use um rumo).'); return; }
+    if (!cur.target) { toast('Arraste no gráfico até onde você quer chegar (ou use um atalho).'); return; }
     if (!activeKey()) { toast('Conecte sua chave da OpenRouter (ícone da chave, no topo).'); return; }
     stopMic();
     if (state.tab !== 'rumo') setTab('rumo');
@@ -1550,15 +1823,15 @@ const App = (function () {
     var i = -1; hist.forEach(function (h, idx) { if (h.id === entry.id) i = idx; });
     if (i === -1) hist.push(entry); else hist[i] = entry;
     while (hist.length > HISTORY_MAX) hist.shift();
-    if (lsSet(HISTORY_STORE, hist)) { toast('Salvo no histórico (nº ' + (i === -1 ? hist.length : i + 1) + '). Ligue "Comparar com o histórico" para ver na carta.'); renderLibrary(); if ($('toggle-history').checked) renderChart(); }
+    if (lsSet(HISTORY_STORE, hist)) { toast('Salvo no histórico (nº ' + (i === -1 ? hist.length : i + 1) + '). Ligue "Comparar com o histórico" para ver no gráfico.'); renderLibrary(); if ($('toggle-history').checked) renderChart(); }
     else toast('Não foi possível salvar (armazenamento do navegador cheio ou bloqueado).');
   }
   function saveCurrent() { if (state.cur) pushHistory(state.cur); }
   function renderLibrary() {
     var hist = lsGet(HISTORY_STORE, []).map(normalizeEntry), el = $('lib-list');
-    if (!hist.length) { el.innerHTML = '<p class="lib-empty">Nenhuma ideia salva ainda. Gere uma carta e use "Salvar no histórico".</p>'; return; }
+    if (!hist.length) { el.innerHTML = '<p class="lib-empty">Nenhuma ideia salva ainda. Posicione uma ideia no gráfico e use "Salvar no histórico".</p>'; return; }
     el.innerHTML = hist.map(function (h, i) {
-      return '<div class="lib-item"><button class="lib-open" data-id="' + esc(h.id) + '"><b>' + (i + 1) + '. ' + esc(h.titulo) + '</b><span>' + esc(QUADS[h.q].nome) + (h.anchor ? ' ⚓' : '') + ' · D ' + h.x + ' · $ ' + h.y + (h.kind === 'sugestao' ? ' · sugestão' : '') + ' · ' + esc(new Date(h.ts).toLocaleDateString('pt-BR')) + '</span></button><button class="btn-icon lib-del" data-id="' + esc(h.id) + '" aria-label="Apagar ' + esc(h.titulo) + '" title="Apagar">&times;</button></div>';
+      return '<div class="lib-item"><button class="lib-open" data-id="' + esc(h.id) + '"><b>' + (i + 1) + '. ' + esc(h.titulo) + '</b><span>' + esc(QUADS[h.q].nome) + (h.anchor ? ' ⚓' : '') + ' · dificuldade ' + h.x + ' · potencial ' + h.y + (h.kind === 'simulacao' ? ' · simulação' : '') + (h.kind === 'sugestao' ? ' · sugestão' : '') + ' · ' + esc(new Date(h.ts).toLocaleDateString('pt-BR')) + '</span></button><button class="btn-icon lib-del" data-id="' + esc(h.id) + '" aria-label="Apagar ' + esc(h.titulo) + '" title="Apagar">&times;</button></div>';
     }).join('');
   }
   function onLibClick(e) {
@@ -1574,6 +1847,7 @@ const App = (function () {
     }
   }
   function loadEntry(it) {
+    if (state.sim) simClose();
     state.cur = normalizeEntry(it);
     $('in-ideia').value = it.ideia || ''; $('in-contexto').value = it.contexto || '';
     setGoal(it.goal || 'renda'); updateCount();
@@ -1582,7 +1856,7 @@ const App = (function () {
   }
 
   // ── Exports ───────────────────────────────────────────────────────────────
-  function fname(ext) { return 'veiculo-ia-' + String(state.cur ? state.cur.titulo : 'carta').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) + '.' + ext; }
+  function fname(ext) { return 'veiculo-ia-' + String(state.cur ? state.cur.titulo : 'grafico').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) + '.' + ext; }
   function exportPNG() {
     var cur = state.cur; if (!cur) return;
     var off = document.createElement('div');
@@ -1609,10 +1883,10 @@ const App = (function () {
     if (bnd) lines.push({ t: 'Fica ' + bnd, c: '#4a5a74' });
     if (useSugs) {
       var t = o.target;
-      lines.push({ t: 'Destino: ' + QUADS[quad(t.x, t.y)].nome + ' · ' + signed(t.y - cur.y) + ' dinheiro · ' + signed(t.x - cur.x) + ' dificuldade', c: '#8e1752' });
+      lines.push({ t: 'Destino: ' + absText(t) + ' (' + deltaText(cur, t) + ')', c: '#8e1752' });
       cur.sugs.forEach(function (s, i) { lines.push({ t: (i + 1) + ' · ' + cut(s.nome, 46) + ' — ' + (s.perto ? 'chega perto' : 'fica longe') + ' (a ' + s.dist + ' pts)' + (s.anchor ? ' ⚓' : ''), c: s.perto ? '#0f6b6b' : '#4a5a74' }); });
     } else {
-      (cur.pivots || []).forEach(function (p, i) { lines.push({ t: (i + 1) + ' · ' + cut(p.nome, 56) + ' → ' + QUADS[p.q].nome + (p.anchor ? ' ⚓' : '') + ' · ' + signed(p.y - cur.y) + ' dinheiro · ' + signed(p.x - cur.x) + ' dificuldade', c: '#0f6b6b' }); });
+      (cur.pivots || []).forEach(function (p, i) { lines.push({ t: (i + 1) + ' · ' + cut(p.nome, 56) + ' → ' + QUADS[p.q].nome + (p.anchor ? ' ⚓' : '') + ' · ' + deltaText(cur, p), c: '#0f6b6b' }); });
     }
     var H = y0 + 52 + lines.length * 34 + 60, W = 1600;
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
@@ -1621,7 +1895,7 @@ const App = (function () {
       '<text x="40" y="112" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="46" fill="#14284a">' + esc(cut(cur.titulo, 58)) + '</text>' +
       inner +
       '<text x="40" y="' + y0 + '" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="34" fill="#b5246b">' + esc(qd.nome) + ' · ' + esc(qd.eixo) + (cur.anchor ? ' · ⚓' : '') + '</text>' +
-      '<text x="40" y="' + (y0 + 44) + '" font-family="Menlo,Consolas,monospace" font-size="22" fill="#14284a">Dificuldade ' + cur.x + '/100 · Dinheiro ' + cur.y + '/100 · Objetivo: ' + esc(GOALS[cur.goal].label) + '</text>' +
+      '<text x="40" y="' + (y0 + 44) + '" font-family="Menlo,Consolas,monospace" font-size="22" fill="#14284a">Dificuldade de operação ' + cur.x + '/100 · Potencial financeiro ' + cur.y + '/100 · Objetivo: ' + esc(GOALS[cur.goal].label) + '</text>' +
       lines.map(function (l, i) { return '<text x="40" y="' + (y0 + 92 + i * 34) + '" font-family="Menlo,Consolas,monospace" font-size="20" fill="' + l.c + '">' + esc(l.t) + '</text>'; }).join('') +
       '<text x="40" y="' + (H - 24) + '" font-family="Menlo,Consolas,monospace" font-size="16" fill="#4a5a74">Base: Índice do Idiota, de Alex Hormozi (vídeo, 2026), adaptado em 4 quadrantes + âncora · Comunidade Maestros da IA · veiculoia.maestrosdaia.com</text>' +
       '</svg>';
@@ -1633,7 +1907,7 @@ const App = (function () {
         var url = c.toDataURL('image/png'); // COR-064: synchronous
         var a = document.createElement('a'); a.href = url; a.download = fname('png');
         document.body.appendChild(a); a.click(); a.remove();
-        toast('Carta baixada (PNG).');
+        toast('Gráfico baixado (PNG).');
       } catch (e) { toast('Não foi possível gerar o PNG neste navegador.'); }
     };
     img.onerror = function () { toast('Não foi possível gerar o PNG neste navegador.'); };
@@ -1655,7 +1929,7 @@ const App = (function () {
   function textSummary() {
     var c = state.cur; if (!c) return '';
     var L1 = ['VEÍCULO IA — ' + c.titulo, c.resumo || c.ideia, '',
-      'Posição: dificuldade ' + c.x + '/100 · dinheiro ' + c.y + '/100',
+      'Posição: dificuldade de operação ' + c.x + '/100 · potencial financeiro ' + c.y + '/100',
       'Quadrante: ' + QUADS[c.q].nome + ' (' + QUADS[c.q].eixo + ')' + (c.anchor ? ' · ⚓ ' + ANCHOR.nome + ' — ' + ANCHOR.linha : ''),
       boundary(c.x, c.y) ? 'Fica ' + boundary(c.x, c.y) : '',
       'Objetivo: ' + GOALS[c.goal].label + ' — encaixe ' + c.fit, ''].filter(function (l, i) { return l !== '' || i === 2 || i === 7; });
@@ -1665,9 +1939,9 @@ const App = (function () {
       L1.push('PRÓXIMOS PASSOS'); c.report.passos.forEach(function (r, i) { L1.push((i + 1) + ') ' + r.texto + ' [' + sourceById(r.fonte).short + ']'); }); L1.push('');
       L1.push('RISCOS'); c.report.riscos.forEach(function (r) { L1.push('- ' + r.texto + ' [' + sourceById(r.fonte).short + ']'); }); L1.push('');
     }
-    if (c.pivots && c.pivots.length) { L1.push('PIVÔS'); c.pivots.forEach(function (p, i) { L1.push((i + 1) + ') ' + p.nome + ': ' + p.descricao + ' → ' + QUADS[p.q].nome + (p.anchor ? ' ⚓' : '') + ' (' + signed(p.y - c.y) + ' dinheiro, ' + signed(p.x - c.x) + ' dificuldade)'); }); L1.push(''); }
-    if (c.sugs && c.sugs.length) { var t = c.sugTarget || c.target; L1.push('NEGÓCIOS PARECIDOS — destino ' + QUADS[quad(t.x, t.y)].nome + ' (dificuldade ' + t.x + ', dinheiro ' + t.y + ')'); c.sugs.forEach(function (s, i) { L1.push((i + 1) + ') ' + s.nome + ' — ' + (s.perto ? 'chega perto' : 'fica longe') + ' (a ' + s.dist + ' pts)' + (s.anchor ? ' ⚓' : '') + ': ' + s.descricao); }); L1.push(''); }
-    L1.push('RÚBRICA'); RUBRIC.forEach(function (r) { L1.push('- ' + r.label + ': ' + c.rubric[r.k].nota + '/10' + (c.rubric[r.k].porque ? ' — ' + c.rubric[r.k].porque : '')); });
+    if (c.pivots && c.pivots.length) { L1.push('PIVÔS'); c.pivots.forEach(function (p, i) { L1.push((i + 1) + ') ' + p.nome + ': ' + p.descricao + ' → ' + QUADS[p.q].nome + (p.anchor ? ' ⚓' : '') + ' (' + deltaText(c, p) + ')'); }); L1.push(''); }
+    if (c.sugs && c.sugs.length) { var t = c.sugTarget || c.target; L1.push('NEGÓCIOS PARECIDOS — destino ' + QUADS[quad(t.x, t.y)].nome + ' (dificuldade ' + t.x + ', potencial ' + t.y + ')'); c.sugs.forEach(function (s, i) { L1.push((i + 1) + ') ' + s.nome + ' — ' + (s.perto ? 'chega perto' : 'fica longe') + ' (a ' + s.dist + ' pts)' + (s.anchor ? ' ⚓' : '') + ': ' + s.descricao); }); L1.push(''); }
+    L1.push('A CONTA (nota × peso = pontos; a soma é a posição)'); RUBRIC.forEach(function (r) { L1.push('- ' + r.label + ': nota ' + c.rubric[r.k].nota + '/10 → ' + fmt1(critPts(r, c.rubric[r.k].nota)) + ' de ' + Math.round(r.w * 100) + (r.inverse ? ' (conta contra)' : '') + (c.rubric[r.k].porque ? ' — ' + c.rubric[r.k].porque : '')); }); L1.push('- Ajuste do "parece legal": nota ' + c.legal.nota + '/10 → ' + fmt1(c.legalAdj));
     L1.push('', 'Base: Índice do Idiota, de Alex Hormozi (vídeo, 2026), adaptado em 4 quadrantes + âncora. Ferramenta educacional — Comunidade Maestros da IA.');
     return L1.join('\n');
   }
@@ -1697,7 +1971,7 @@ const App = (function () {
   function useExample() {
     var ex = IDEA_EXAMPLES[exIdx % IDEA_EXAMPLES.length]; exIdx++;
     $('in-ideia').value = ex.i; $('in-contexto').value = ex.c; setGoal(ex.g); updateCount();
-    toast('Exemplo preenchido — clique em "Posicionar na carta".');
+    toast('Exemplo preenchido — clique em "Posicionar no gráfico".');
   }
   function clearForm() {
     stopMic();
@@ -1726,6 +2000,19 @@ const App = (function () {
     $('png-btn').addEventListener('click', exportPNG);
     $('sug-btn').addEventListener('click', suggest);
     $('dest-go').addEventListener('click', onDestGo);
+    $('calc-btn').addEventListener('click', function () { playCalc(true); });
+    $('sim-rows').addEventListener('input', onSimInput);
+    $('sim-reset').addEventListener('click', simReset);
+    $('sim-save').addEventListener('click', simSave);
+    $('sim-close').addEventListener('click', simClose);
+    $('report-body').addEventListener('click', function (e) {
+      if (e.target.closest('.sim-open')) { simOpen(); return; }
+      if (e.target.closest('.calc-open')) { var cc = $('chart-card'); window.scrollBy({ top: cc.getBoundingClientRect().top - headerBottom() - 8, behavior: reducedMotion() ? 'auto' : 'smooth' }); setTimeout(function () { playCalc(true); }, reducedMotion() ? 0 : 350); return; }
+      var pb = e.target.closest('.piv-sim');
+      if (pb && state.cur && state.cur.pivots) { var pv = state.cur.pivots[parseInt(pb.getAttribute('data-i'), 10)]; if (pv) simOpen({ rub: applyDeltas(state.cur.rubric, pv.deltas || {}), label: 'pivô ' + (parseInt(pb.getAttribute('data-i'), 10) + 1) + ': ' + pv.nome }); }
+    });
+    // a click, tap or Esc skips the calculation to its end
+    $('chart-wrap').addEventListener('pointerdown', function (e) { if (calc.on) { stopCalc(true); e.stopPropagation(); e.preventDefault(); } }, true);
     var sugScrollT = null;   // seeing the list by scrolling also retires the "Ver as sugestões" pill
     window.addEventListener('scroll', function () { if (sugScrollT) return; sugScrollT = setTimeout(function () { sugScrollT = null; if (state.cur && state.cur.sugs && state.cur.sugs.length && sugsInView()) markSugsSeen(); }, 150); }, { passive: true });
     $('sug-list').addEventListener('click', onSugClick);
@@ -1780,6 +2067,7 @@ const App = (function () {
     });
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      if (calc.on) { stopCalc(true); return; }
       if (state.card.open) { closeCard(true); return; }
       if (state.lens.open) { hideLens(true); return; }
       $('lib-modal').style.display = 'none';
@@ -1808,7 +2096,7 @@ const App = (function () {
   function renderChartButtonsOnly() { renderChart(); }
 
 
-  return { init: init, _calc: { position: position, quad: quad, anchorOf: anchorOf, boundary: boundary, goalFit: goalFit, normRubric: normRubric, normSugs: normSugs, normalizeEntry: normalizeEntry, EXAMPLES: EXAMPLES, SOURCES: SOURCES, geom: geom, buildSVG: buildSVG, layout: layout } };
+  return { init: init, _calc: { position: position, quad: quad, anchorOf: anchorOf, boundary: boundary, goalFit: goalFit, normRubric: normRubric, normSugs: normSugs, normalizeEntry: normalizeEntry, EXAMPLES: EXAMPLES, SOURCES: SOURCES, geom: geom, buildSVG: buildSVG, layout: layout, calcSteps: calcSteps, critPts: critPts, RUBRIC: RUBRIC, QUADS: QUADS }, _state: function () { return { calcOn: calc.on, sim: state.sim, simCur: state.simCur }; } };
 })();
 
 // ── App init triggers: event + DOMContentLoaded + MutationObserver (COR-008/044) ──
