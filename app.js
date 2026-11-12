@@ -104,7 +104,7 @@ const App = (function () {
     { id: 'naval', year: 2018, short: 'Naval 2018', title: 'Naval Ravikant — "How to Get Rich (without getting lucky)", thread no Twitter (31/05/2018)', supports: '"Você não vai ficar rico alugando o seu tempo." Fortuna exige alavancagem: trabalho, capital e código e mídia — estas "sem permissão". Mídia e produto soltam a âncora do especialista.', honest: 'Data conferida no próprio tweet; frases conferidas em nav.al/rich, o site do autor. Naval fala de enriquecer em geral, não do gráfico.', url: 'https://nav.al/rich' },
     { id: 'hormozi_offers', year: 2021, short: '$100M Offers', title: 'Alex Hormozi — $100M Offers (2021), a "multidão faminta"', supports: 'Escolha de mercado: dor intensa, poder de compra, fácil de alcançar e crescendo — por isso "mude para um público mais velho e com dinheiro" é um pivô recorrente.', honest: 'Livro do próprio Hormozi, anterior ao vídeo.', url: 'https://www.acquisition.com/books' },
     { id: 'musk', year: 2022, short: 'Musk', title: 'Elon Musk — o "idiot index" original', supports: 'O nome: para Musk, idiot index é o custo de uma peça dividido pelo custo da matéria-prima. O vídeo reaproveita o nome para outra ideia.', honest: 'São conceitos diferentes; só o rótulo foi emprestado. O termo circula em falas de Musk, sem uma publicação única de origem.', url: 'https://en.wikipedia.org/wiki/Elon_Musk' },
-    { id: 'hormozi_video', year: 2026, short: 'Hormozi 2026', title: 'Alex Hormozi — "How To Make More Money Than You Deserve (My 2027 Framework)" (YouTube, nov. 2026)', supports: 'Os 5 veículos (dificuldade de operação × potencial financeiro) e seus exemplos, o teste do bilionário ("como é isso no máximo?"), o desconto do "parece legal" e o fechamento: escolha o veículo pelo objetivo, depois reme forte.', honest: 'Não achamos ninguém que tenha publicado antes este mesmo quadro: as peças são mais antigas — veja acima —, mas a síntese é dele. Aqui os veículos 1, 2, 4 e 5 viram os quatro quadrantes e o veículo 3 vira a âncora. Baseado no que ele viu em mais de 10 mil negócios; não é pesquisa acadêmica.', url: 'https://youtu.be/pwZJcLZc3_Y' }
+    { id: 'hormozi_video', year: 2026, short: 'Hormozi 2026', title: 'Alex Hormozi — "How To Make More Money Than You Deserve (My 2027 Framework)" (YouTube, nov. 2026)', supports: 'Os 5 veículos (dificuldade × potencial financeiro) e seus exemplos, o teste do bilionário ("como é isso no máximo?"), o desconto do "parece legal" e o fechamento: escolha o veículo pelo objetivo, depois reme forte.', honest: 'Não achamos ninguém que tenha publicado antes este mesmo quadro: as peças são mais antigas — veja acima —, mas a síntese é dele. Aqui os veículos 1, 2, 4 e 5 viram os quatro quadrantes e o veículo 3 vira a âncora. Baseado no que ele viu em mais de 10 mil negócios; não é pesquisa acadêmica.', url: 'https://youtu.be/pwZJcLZc3_Y' }
   ];
   var SOURCE_IDS = SOURCES.map(function (s) { return s.id; });
   function sourceById(id) { for (var i = 0; i < SOURCES.length; i++) if (SOURCES[i].id === id) return SOURCES[i]; return sourceById('hormozi_video'); }
@@ -331,7 +331,7 @@ const App = (function () {
   function buildSVG(g, o) {
     var px = pxf(g), py = pyf(g), cur = o.cur, p = o.idp;
     var mx = px(50), my = py(50), s = [];
-    s.push('<svg xmlns="' + SVGNS + '" viewBox="0 0 ' + g.W + ' ' + g.H + '" class="chart-svg" role="img" aria-label="Gráfico x,y de 0 a 100: dificuldade de operação no eixo horizontal, potencial financeiro no eixo vertical' + (cur ? '; a ideia está em dificuldade ' + cur.x + ' e potencial financeiro ' + cur.y + ', em ' + esc(QUADS[quad(cur.x, cur.y)].nome) : '') + '">');
+    s.push('<svg xmlns="' + SVGNS + '" viewBox="0 0 ' + g.W + ' ' + g.H + '" class="chart-svg" role="img" aria-label="Gráfico x,y de 0 a 100: dificuldade no eixo horizontal, potencial financeiro no eixo vertical' + (cur ? '; a ideia está em dificuldade ' + cur.x + ' e potencial financeiro ' + cur.y + ', em ' + esc(QUADS[quad(cur.x, cur.y)].nome) : '') + '">');
     s.push('<defs><clipPath id="' + p + '-clip"><rect x="' + g.L + '" y="' + g.T + '" width="' + (g.R - g.L) + '" height="' + (g.B - g.T) + '"/></clipPath>' +
       '<marker id="' + p + '-ar-t" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0f6b6b"/></marker>' +
       '<marker id="' + p + '-ar-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7a8494"/></marker></defs>');
@@ -417,13 +417,10 @@ const App = (function () {
     }
     s.push('<g class="dest"></g>');
     s.push('<g class="labels" font-family="Georgia,\'Iowan Old Style\',serif" fill="#14284a">');
-    QORDER.forEach(function (q) {
-      s.push('<text class="zl" data-q="' + q + '" font-size="' + g.fz.zone + '" font-style="italic" font-weight="700" stroke="#fffdf7" stroke-opacity=".85" stroke-width="6" stroke-linejoin="round" paint-order="stroke" x="0" y="0">' + esc(QUADS[q].nome) + '</text>');
-    });
     var axY = g.B + 66, axX = g.L - 58;   // axis titles: "fácil … difícil" and "baixo … alto" at the ends
     s.push('<g class="ax" font-size="' + g.fz.axis + '" font-style="italic" fill="#2e4366">' +
       '<text x="' + px(0) + '" y="' + axY + '" text-anchor="start">fácil</text>' +
-      '<text x="' + px(50) + '" y="' + axY + '" text-anchor="middle" font-weight="700">Dificuldade de operação</text>' +
+      '<text x="' + px(50) + '" y="' + axY + '" text-anchor="middle" font-weight="700">Dificuldade</text>' +
       '<text x="' + px(100) + '" y="' + axY + '" text-anchor="end">difícil</text>' +
       '<text transform="translate(' + axX + ' ' + py(0) + ') rotate(-90)" text-anchor="start">baixo</text>' +
       '<text transform="translate(' + axX + ' ' + py(50) + ') rotate(-90)" text-anchor="middle" font-weight="700">Potencial financeiro</text>' +
@@ -484,41 +481,21 @@ const App = (function () {
     function cands(near, nearX, far, farX, t1, t2, tm) {
       return [[near, nearX, t1, 0], [near, nearX, t2, 0.5], [far, farX, t1, 1], [far, farX, t2, 1.5], [near, nearX, tm, 2], [far, farX, tm, 2.5]];
     }
-    var specs = {
-      arb: { maxW: (mx - g.L) - 2 * pad - iw - gap, c: cands('start', g.L + pad, 'end', mx - pad, function () { return g.T + pad; }, function (h) { return my - pad - h; }, function (h) { return (g.T + my) / 2 - h / 2; }) },
-      fos: { maxW: (g.R - mx) - 2 * pad - iw - gap, c: cands('end', g.R - pad, 'start', mx + pad, function () { return g.T + pad; }, function (h) { return my - pad - h; }, function (h) { return (g.T + my) / 2 - h / 2; }) },
-      cai: { maxW: (mx - g.L) - 2 * pad - iw - gap, c: cands('start', g.L + pad, 'end', mx - pad, function (h) { return g.B - pad - h; }, function () { return my + pad; }, function (h) { return (my + g.B) / 2 - h / 2; }) },
-      com: { maxW: (g.R - mx) - 2 * pad - iw - gap, c: cands('end', g.R - pad, 'start', mx + pad, function (h) { return g.B - pad - h; }, function () { return my + pad; }, function (h) { return (my + g.B) / 2 - h / 2; }) }
-    };
+    // v4.2: no zone names on the drawing — each "i" sits alone in its outer corner. If the corner is
+    // taken (boat, dot, buoy), slide it along the edges to the first free spot.
+    var corners = { arb: [g.L, g.T, 1, 1], fos: [g.R, g.T, -1, 1], cai: [g.L, g.B, 1, -1], com: [g.R, g.B, -1, -1] };
+    var half = Math.max(iw, 24) / 2 + 2;
     QORDER.forEach(function (q) {
-      var el = svg.querySelector('.zl[data-q="' + q + '"]'); if (!el) return;
-      var sp = specs[q], txt = QUADS[q].nome, fz = g.fz.zone, lines = [txt];
-      el.setAttribute('text-anchor', 'start');
-      setLines(el, lines, 0, 0, fz);
-      if (bboxOf(el).w > sp.maxW) {                       // shrink first (one line reads best), then wrap
-        while (bboxOf(el).w > sp.maxW && fz > 20) { fz -= 1; setLines(el, lines, 0, 0, fz); }
-        if (bboxOf(el).w > sp.maxW) { fz = g.fz.zone; lines = wrap2(txt); setLines(el, lines, 0, 0, fz); while (bboxOf(el).w > sp.maxW && fz > 18) { fz -= 1; setLines(el, lines, 0, 0, fz); } }
-      }
-      var h = bboxOf(el).h, best = null;
-      sp.c.forEach(function (cand) {
-        var anchor = cand[0], edge = cand[1], top = cand[2](h);
-        var tx = anchor === 'start' ? edge + iw + gap : edge - iw - gap;
-        el.setAttribute('text-anchor', anchor);
-        setLines(el, lines, tx, top, fz);
-        var bb = bboxOf(el);
-        var full = anchor === 'start' ? { x: bb.x - iw - gap, y: Math.min(bb.y, top), w: bb.w + iw + gap, h: Math.max(bb.h, iw) } : { x: bb.x, y: Math.min(bb.y, top), w: bb.w + iw + gap, h: Math.max(bb.h, iw) };
-        var cost = cand[3];
-        if (full.y < g.T + 1 || full.y + full.h > g.B - 1 || full.x < g.L + 1 || full.x + full.w > g.R - 1) cost += 1e6;
-        circleRects.forEach(function (c) { cost += rectOverlap(inflate(full, 4), c) * 10; });
-        (o.segs || []).forEach(function (sg) { if (segHitsRect(sg, inflate(full, 2))) cost += 300; });
-        placed.forEach(function (pl) { cost += rectOverlap(inflate(full, 4), pl) * 10; });
-        if (!best || cost < best.cost) best = { cost: cost, anchor: anchor, tx: tx, top: top, edge: edge, full: full };
+      var c = corners[q], best = null;
+      [[0, 0], [1, 0], [0, 1], [2, 0], [0, 2], [1, 1], [3, 0], [0, 3]].forEach(function (st, n) {
+        var cx = c[0] + c[2] * (pad + half + st[0] * 2 * half), cy = c[1] + c[3] * (pad + half + st[1] * 2 * half);
+        var r = { x: cx - half, y: cy - half, w: 2 * half, h: 2 * half }, cost = n;
+        circleRects.forEach(function (cr) { cost += rectOverlap(inflate(r, 3), cr) * 10; });
+        (o.segs || []).forEach(function (sg) { if (segHitsRect(sg, r)) cost += 200; });
+        if (!best || cost < best.cost) best = { cost: cost, cx: cx, cy: cy, r: r };
       });
-      el.setAttribute('text-anchor', best.anchor);
-      setLines(el, lines, best.tx, best.top, fz);
-      placed.push(best.full);
-      var lineMid = best.top + fz * 0.52;
-      info[q] = { cx: best.anchor === 'start' ? best.edge + iw / 2 : best.edge - iw / 2, cy: lineMid };
+      info[q] = { cx: best.cx, cy: best.cy };
+      placed.push(best.r);
     });
     // idea tag: "Sua ideia" — never overlaps a label, dot, arrow, buoy or the boat
     var cur = o.cur, tagG = svg.querySelector('.idea-tag');
@@ -890,7 +867,7 @@ const App = (function () {
       h.push('</fieldset>');
       return h.join('');
     };
-    box.innerHTML = col('x', 'Dificuldade de operação') + col('y', 'Potencial financeiro');
+    box.innerHTML = col('x', 'Dificuldade') + col('y', 'Potencial financeiro');
   }
   function simRefresh() {
     var cur = state.cur, sc = state.simCur, sim = state.sim; if (!cur || !sc || !sim) return;
@@ -980,7 +957,7 @@ const App = (function () {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'zinfo'; b.textContent = 'i';
       b.setAttribute('data-q', q); b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', 'zone-card');
-      b.setAttribute('aria-label', 'O que é o quadrante ' + QUADS[q].nome + '?');
+      b.setAttribute('aria-label', 'O que é ' + QUADS[q].nome + '?'); b.title = 'O que é ' + QUADS[q].nome + '?';
       b.style.left = Math.round(p.x - 15) + 'px'; b.style.top = Math.round(p.y - 15) + 'px';
       box.appendChild(b);
     });
@@ -1337,7 +1314,7 @@ const App = (function () {
   var LANG = 'Escreva SEMPRE em português do Brasil, com acentuação correta, frases claras e diretas, sem jargão em inglês desnecessário.';
   var KB = [
     'BASE DE CONHECIMENTO (use SOMENTE isto — não invente estatísticas, casos ou citações):',
-    'Vídeo "How To Make More Money Than You Deserve (My 2027 Framework)" (Alex Hormozi). Tese: ganhar mais do que "merece" depende menos de inteligência e esforço e mais do TIPO de negócio (o veículo). Eixos: dificuldade de operação (quão difícil é operar) × potencial financeiro (quanto dinheiro dá para fazer, realisticamente). História de Buffett: um colega mais inteligente e mais trabalhador foi para o aço e ganhou muito menos — por causa do barco.',
+    'Vídeo "How To Make More Money Than You Deserve (My 2027 Framework)" (Alex Hormozi). Tese: ganhar mais do que "merece" depende menos de inteligência e esforço e mais do TIPO de negócio (o veículo). Eixos: dificuldade (quão difícil é entrar no negócio e operá-lo: barreiras de entrada como capital, habilidade e regulação, mais o peso da operação: mão de obra, complexidade e tempo até maturar) × potencial financeiro (quanto dinheiro dá para fazer, realisticamente). História de Buffett: um colega mais inteligente e mais trabalhador foi para o aço e ganhou muito menos — por causa do barco.',
     'ESTA FERRAMENTA usa 4 QUADRANTES (os veículos 1, 2, 4 e 5 do vídeo) e trata o veículo 3 como uma ÂNCORA que pode aparecer em qualquer quadrante:',
     '- Commodity braçal (difícil, baixo potencial financeiro; veículo 1): barreira de entrada baixa → concorrência feroz, escala limitada, muito arrasto operacional. Restaurante tradicional, academia de serviço, agência para PME, varejo físico, eventos. Mesmo quem tem sucesso ali ganharia mais aplicando as mesmas habilidades num veículo melhor.',
     '- Negócio de entrada (fácil, baixo potencial financeiro; veículo 2): uma pessoa com a habilidade certa chega a renda de top 1%, raramente maior. Dropshipping, serviços leves para casa, vending/ATM, wholesale imobiliário, arbitragem de Airbnb, conteúdo de afiliado. Fácil não é ruim: serve para gerar caixa, aprender e juntar capital.',
@@ -1359,7 +1336,7 @@ const App = (function () {
   var SRC_LIST = SOURCES.map(function (s) { return '- ' + s.id + ': ' + s.title + ' — sustenta: ' + s.supports; }).join('\n');
   var RUBRIC_DEFS = RUBRIC.map(function (r) { return '- ' + r.k + ' (' + r.label + '): ' + r.hint; }).join('\n');
   function posText(e) {
-    return 'dificuldade de operação ' + e.x + '/100, potencial financeiro ' + e.y + '/100 → quadrante ' + QUADS[e.q].nome + ' (' + QUADS[e.q].eixo + ')' +
+    return 'dificuldade ' + e.x + '/100, potencial financeiro ' + e.y + '/100 → quadrante ' + QUADS[e.q].nome + ' (' + QUADS[e.q].eixo + ')' +
       (e.anchor ? '; ÂNCORA ligada (independência do fundador ' + e.rubric.transferivel.nota + '/10: depende de você)' : '; sem âncora') +
       (boundary(e.x, e.y) ? '; ' + boundary(e.x, e.y) : '');
   }
@@ -1440,7 +1417,7 @@ const App = (function () {
       cur.contexto ? 'CONTEXTO: ' + cur.contexto : '',
       'POSIÇÃO ATUAL (calculada): ' + posText(cur) + '.',
       'NOTAS ATUAIS: ' + rubNotes + '; parece_legal=' + cur.legal.nota,
-      'DESTINO escolhido no gráfico: dificuldade de operação ' + t.x + '/100, potencial financeiro ' + t.y + '/100 → ' + QUADS[tq].nome + ' (' + QUADS[tq].eixo + '). Mudança desejada: ' + signed(t.y - cur.y) + ' de potencial financeiro, ' + signed(t.x - cur.x) + ' de dificuldade.',
+      'DESTINO escolhido no gráfico: dificuldade ' + t.x + '/100, potencial financeiro ' + t.y + '/100 → ' + QUADS[tq].nome + ' (' + QUADS[tq].eixo + '). Mudança desejada: ' + signed(t.y - cur.y) + ' de potencial financeiro, ' + signed(t.x - cur.x) + ' de dificuldade.',
       targetProfile(t),
       'COMPETÊNCIAS: ' + (comp || 'não informado'),
       'HISTÓRICO: ' + (hist || 'não informado'),
@@ -1509,7 +1486,7 @@ const App = (function () {
   function rubricTable(cur) {
     var h = ['<p class="conta-lead">A IA dá as notas; a ferramenta faz a conta: <b>nota × peso = pontos</b>, e a soma é a posição. Cada eixo vale no máximo 100.</p>',
       '<div class="rubric-wrap"><table class="rubric"><thead><tr><th>Critério</th><th>Nota</th><th>Pontos</th><th>Por quê</th></tr></thead><tbody>'];
-    h.push('<tr class="axis-row"><td colspan="4">Dificuldade de operação = ' + cur.x + ' de 100</td></tr>');
+    h.push('<tr class="axis-row"><td colspan="4">Dificuldade = ' + cur.x + ' de 100</td></tr>');
     CALC_ORDER.forEach(function (k) {
       var r = rubricDef(k);
       if (k === 'teto') h.push('<tr class="axis-row"><td colspan="4">Potencial financeiro = ' + cur.y + ' de 100</td></tr>');
@@ -1532,7 +1509,7 @@ const App = (function () {
   function headerHTML(cur) {
     var qd = QUADS[cur.q], bnd = boundary(cur.x, cur.y);
     return '<h3 class="rep-title">' + esc(cur.titulo) + '</h3>' +
-      '<dl class="fix-strip"><div><dt>Dificuldade de operação</dt><dd>' + cur.x + '/100</dd></div><div><dt>Potencial financeiro</dt><dd>' + cur.y + '/100</dd></div>' +
+      '<dl class="fix-strip"><div><dt>Dificuldade</dt><dd>' + cur.x + '/100</dd></div><div><dt>Potencial financeiro</dt><dd>' + cur.y + '/100</dd></div>' +
       '<div><dt>Quadrante</dt><dd class="v">' + esc(qd.nome) + (cur.anchor ? ' ⚓' : '') + '</dd></div><div><dt>Objetivo</dt><dd>' + esc(GOALS[cur.goal] ? GOALS[cur.goal].label : '—') + '</dd></div></dl>' +
       '<div class="vehicle-plate"><div><p class="vname">' + esc(qd.nome) + ' <span class="hint">· ' + esc(qd.eixo) + '</span></p><p class="vdesc">' + esc(qd.resumo) + '</p></div></div>' +
       (cur.anchor ? anchorLine() : '') +
@@ -1898,7 +1875,7 @@ const App = (function () {
       '<text x="40" y="112" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="46" fill="#14284a">' + esc(cut(cur.titulo, 58)) + '</text>' +
       inner +
       '<text x="40" y="' + y0 + '" font-family="Georgia,serif" font-style="italic" font-weight="700" font-size="34" fill="#b5246b">' + esc(qd.nome) + ' · ' + esc(qd.eixo) + (cur.anchor ? ' · ⚓' : '') + '</text>' +
-      '<text x="40" y="' + (y0 + 44) + '" font-family="Menlo,Consolas,monospace" font-size="22" fill="#14284a">Dificuldade de operação ' + cur.x + '/100 · Potencial financeiro ' + cur.y + '/100 · Objetivo: ' + esc(GOALS[cur.goal].label) + '</text>' +
+      '<text x="40" y="' + (y0 + 44) + '" font-family="Menlo,Consolas,monospace" font-size="22" fill="#14284a">Dificuldade ' + cur.x + '/100 · Potencial financeiro ' + cur.y + '/100 → ' + esc(qd.nome) + ' · Objetivo: ' + esc(GOALS[cur.goal].label) + '</text>' +
       lines.map(function (l, i) { return '<text x="40" y="' + (y0 + 92 + i * 34) + '" font-family="Menlo,Consolas,monospace" font-size="20" fill="' + l.c + '">' + esc(l.t) + '</text>'; }).join('') +
       '<text x="40" y="' + (H - 24) + '" font-family="Menlo,Consolas,monospace" font-size="16" fill="#4a5a74">Base: Índice do Idiota, de Alex Hormozi (vídeo, 2026), adaptado em 4 quadrantes + âncora · Comunidade Maestros da IA · veiculoia.maestrosdaia.com</text>' +
       '</svg>';
@@ -1932,7 +1909,7 @@ const App = (function () {
   function textSummary() {
     var c = state.cur; if (!c) return '';
     var L1 = ['VEÍCULO IA — ' + c.titulo, c.resumo || c.ideia, '',
-      'Posição: dificuldade de operação ' + c.x + '/100 · potencial financeiro ' + c.y + '/100',
+      'Posição: dificuldade ' + c.x + '/100 · potencial financeiro ' + c.y + '/100',
       'Quadrante: ' + QUADS[c.q].nome + ' (' + QUADS[c.q].eixo + ')' + (c.anchor ? ' · ⚓ ' + ANCHOR.nome + ' — ' + ANCHOR.linha : ''),
       boundary(c.x, c.y) ? 'Fica ' + boundary(c.x, c.y) : '',
       'Objetivo: ' + GOALS[c.goal].label + ' — encaixe ' + c.fit, ''].filter(function (l, i) { return l !== '' || i === 2 || i === 7; });
