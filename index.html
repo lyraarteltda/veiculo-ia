@@ -8,8 +8,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veículo IA — Maestros da IA</title>
-  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja em qual dos 5 veículos do Índice do Idiota ela cai: carta posicionada, rúbrica pontuada, rotas para subir na carta e negócios parecidos que reaproveitam o que você já sabe.">
-  <link rel="stylesheet" href="styles.css?v=20261112c">
+  <meta name="description" content="Escreva ou dite sua ideia de negócio e veja em que quadrante do Índice do Idiota ela cai, se ela depende de você, e arraste na carta até onde quer chegar para receber negócios parecidos que reaproveitam o que você já sabe.">
+  <link rel="stylesheet" href="styles.css?v=20261112e">
   <link rel="preconnect" href="https://gate.maestrosdaia.com">
   <link rel="preload" href="https://gate.maestrosdaia.com/v1/membership-gate.js" as="script">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23f4efe2'/%3E%3Crect x='2' y='2' width='28' height='28' fill='none' stroke='%2314284a' stroke-width='2'/%3E%3Cpath d='M16 5l3 11-3 11-3-11z' fill='%2314284a'/%3E%3Cpath d='M5 16l11-3 11 3-11 3z' fill='%23b5246b'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4efe2'/%3E%3C/svg%3E">
@@ -31,7 +31,7 @@
           <text x="50" y="2.6" font-size="9" text-anchor="middle" fill="#14284a" font-family="Georgia,serif" font-style="italic" dy="7">N</text>
         </svg>
         <div class="gate-header">
-          <p class="kicker">Índice do Idiota · 5 veículos</p>
+          <p class="kicker">Índice do Idiota · 4 quadrantes + âncora</p>
           <h1 class="gradient-text">Veículo IA</h1>
           <p class="subtitle">Descubra em qual "barco" a sua ideia de negócio está — e como subir na carta.</p>
           <p class="community-badge">Exclusivo para membros da Comunidade Maestros da IA</p>
@@ -172,12 +172,18 @@
           <div id="stage-head" class="stage-head" hidden><h2 class="tb-title" id="tb-title"></h2></div>
 
           <div class="chart-card neat"><div class="neat-inner">
-            <div class="chart-wrap" id="chart-wrap">
+            <div class="chart-wrap" id="chart-wrap" tabindex="0" role="group" aria-label="Carta interativa. Depois da avaliação, use as setas para mover o destino, Enter para sugerir negócios e Esc para cancelar." aria-describedby="dest-live">
               <div id="chart-host"></div>
-              <div id="chart-pop" class="chart-pop" role="dialog" aria-label="Exemplos de negócios" hidden></div>
+              <div id="info-btns"></div>
+              <div id="boat-handle" class="boat-handle" hidden aria-hidden="true" title="Arraste o barco"></div>
+              <button type="button" id="dest-go" class="dest-go" hidden>Sugerir negócios para chegar aqui</button>
+              <div id="chart-pop" class="chart-pop" role="dialog" aria-label="Exemplos de negócios" aria-hidden="true"></div>
+              <div id="zone-card" class="zone-card" role="dialog" aria-label="O que significa" hidden></div>
+              <p id="dest-live" class="sr-only" aria-live="polite"></p>
             </div>
             <div class="chart-foot">
               <p id="chart-hint" class="chart-hint"></p>
+              <span class="anchor-key"><span class="anc-ico" aria-hidden="true">⚓</span> Âncora = depende de você <button type="button" class="zinfo zinfo-inline" data-q="anchor" aria-expanded="false" aria-controls="zone-card" aria-label="O que é a âncora?">i</button></span>
               <label class="switch-line"><input type="checkbox" id="toggle-history"> Comparar com o histórico</label>
             </div>
           </div></div>
@@ -204,8 +210,8 @@
 
             <section id="panel-rumo" class="report neat" role="tabpanel" aria-labelledby="tab-rumo" hidden><div class="neat-inner">
               <h3>Para onde você quer ir?</h3>
-              <p class="rumo-lead">Escolha um lado nos botões ou clicando na carta.</p>
-              <div id="dir-buttons" class="dir-buttons" role="group" aria-label="Lado da carta"></div>
+              <p id="dest-summary" class="dest-summary"></p>
+              <div id="dir-buttons" class="dir-buttons" role="group" aria-label="Rumos prontos"></div>
 
               <div class="field">
                 <div class="field-head">
@@ -232,7 +238,7 @@
                 <span id="st-obj" class="mic-status" aria-live="polite"></span>
               </div>
 
-              <button id="sug-btn" type="button" class="btn-primary sug-btn"><span class="gen-text">Sugerir negócios parecidos</span><span class="gen-loading">Procurando…</span></button>
+              <button id="sug-btn" type="button" class="btn-primary sug-btn"><span class="gen-text">Sugerir negócios para chegar aqui</span><span class="gen-loading">Procurando…</span></button>
               <p id="sug-status" class="sug-status" aria-live="polite"></p>
               <div id="sug-list" class="sug-list"></div>
             </div></section>
@@ -307,12 +313,12 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="config.js?v=20261112c"></script>
-  <script src="kill-switch.js?v=20261112c"></script>
-  <script src="rate-limiter.js?v=20261112c"></script>
+  <script src="config.js?v=20261112e"></script>
+  <script src="kill-switch.js?v=20261112e"></script>
+  <script src="rate-limiter.js?v=20261112e"></script>
   <script src="https://gate.maestrosdaia.com/v1/membership-gate.js"></script>
-  <script src="api-key-manager.js?v=20261112c"></script>
-  <script src="feedback-widget.js?v=20261112c"></script>
-  <script src="app.js?v=20261112c"></script>
+  <script src="api-key-manager.js?v=20261112e"></script>
+  <script src="feedback-widget.js?v=20261112e"></script>
+  <script src="app.js?v=20261112e"></script>
 </body>
 </html>
