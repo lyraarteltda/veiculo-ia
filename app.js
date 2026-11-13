@@ -2072,6 +2072,7 @@ const App = (function () {
     var title = running ? 'Pensando… ' + secs + ' s' : 'Como a busca pensou' + (secs ? ' · ' + secs + ' s' : '');
     var last = running ? S.steps.filter(function (st) { return st.st === 'run'; }).pop() : null;
     var lineTxt = running ? 'Pensando… ' + (last ? last.text : '') + ' · ' + secs + ' s' : (meta ? 'Pronto: ' + meta.perto + ' de ' + (cur.sugs || []).length + ' chegam perto · ' + meta.rounds + (meta.rounds === 1 ? ' rodada' : ' rodadas') + ' · ' + meta.seconds + ' s' : (S && S.steps.length ? S.steps[S.steps.length - 1].text : ''));
+    if (!lineTxt && cur && sugsForTarget(cur)) lineTxt = cur.sugs.filter(function (x) { return x.perto; }).length + ' de ' + cur.sugs.length + ' chegam perto do destino';   // a result saved before v5
     if (line) {
       line.hidden = !lineTxt || $('result').hidden;
       $('search-line-text').textContent = lineTxt;
