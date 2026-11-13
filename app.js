@@ -1499,7 +1499,7 @@ const App = (function () {
   }
   // Blind judge: takes ONLY the person's profile and the list of businesses (no destination, no position, no gap).
   function judgeMessages(profile, list) {
-    var sys = ['Você é um avaliador independente de negócios. Para CADA negócio da lista, dê as 14 notas inteiras de 0 a 10 da rúbrica, cada uma com um porquê de no máximo 8 palavras, e o "parece legal". Avalie cada negócio do zero, como ele funcionaria no Brasil para esta pessoa, com honestidade e ceticismo; não infle notas.',
+    var sys = ['Você é um avaliador independente de negócios. Para CADA negócio da lista, dê as 14 notas inteiras de 0 a 10 da rúbrica, cada uma com um porquê de no máximo 8 palavras, e o "parece legal". Avalie cada negócio do zero, como ele funcionaria no Brasil para esta pessoa, com honestidade e ceticismo; não infle notas. Escreva cada porquê em português do Brasil com todos os acentos (ç, ã, õ, á, é, í, ó, ú, â, ê, ô); nunca escreva palavras sem acento.',
       KB, 'RÚBRICA:\n' + RUBRIC_DEFS, '"parece_legal" (0–10): quão "legal/glamoroso" o negócio soa num coquetel (10 = todo mundo quer fazer; 0 = ninguém quer dizer que faz).', CALIB, LANG,
       'Responda APENAS com um objeto JSON neste formato exato (sem markdown), com uma avaliação por negócio, na mesma ordem e com o mesmo número:',
       '{"avaliacoes":[{"n":1,"rubrica":{"trabalho":{"nota":0,"porque":""},"habilidade":{"nota":0,"porque":""},"capital":{"nota":0,"porque":""},"regulacao":{"nota":0,"porque":""},"operacao":{"nota":0,"porque":""},"tempo":{"nota":0,"porque":""},"teto":{"nota":0,"porque":""},"margem":{"nota":0,"porque":""},"escala":{"nota":0,"porque":""},"fosso":{"nota":0,"porque":""},"ventos":{"nota":0,"porque":""},"recorrencia":{"nota":0,"porque":""},"transferivel":{"nota":0,"porque":""},"concorrencia":{"nota":0,"porque":""}},"parece_legal":{"nota":0,"porque":""}}]}'].join('\n\n');
@@ -1564,8 +1564,11 @@ const App = (function () {
   // When nothing gets close: say which was closest and what is missing, from its notes
   function missingText(c, t) {
     var need = [], over = [];
+    var byNota = function (ks, dir) { return ks.slice().sort(function (a, b) { return dir * (c.rubric[a].nota - c.rubric[b].nota); }); };
     var lowY = ['fosso', 'teto', 'escala', 'recorrencia', 'margem', 'ventos'].filter(function (k) { return c.rubric[k].nota <= 4; }).slice(0, 3);
+    if (!lowY.length) lowY = byNota(['fosso', 'teto', 'escala', 'recorrencia', 'margem', 'ventos'], 1).slice(0, 2);   // the weakest ones
     var hiX = ['trabalho', 'habilidade', 'capital', 'regulacao', 'operacao', 'tempo'].filter(function (k) { return c.rubric[k].nota >= 6; }).slice(0, 3);
+    if (!hiX.length) hiX = byNota(['trabalho', 'habilidade', 'capital', 'regulacao', 'operacao', 'tempo'], -1).slice(0, 2);   // the heaviest ones
     var notas = function (ks) { return ks.length ? ' (' + ks.map(function (k) { return SHORT[k] + ' ' + c.rubric[k].nota + '/10'; }).join(', ') + ')' : ''; };
     if (c.y < t.y - 5) need.push('mais potencial' + notas(lowY));
     if (c.x > t.x + 5) need.push('mais facilidade' + notas(hiX));
